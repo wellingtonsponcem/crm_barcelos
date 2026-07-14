@@ -10,6 +10,10 @@ function crm2_config(): array
         $config = array_replace($sample, require $local);
     } else {
         $config = $sample;
+        // Default to sqlite if config.php is missing and no environment override is present
+        if (!getenv('DB_DRIVER')) {
+            $config['db_driver'] = 'sqlite';
+        }
     }
 
     // Allow database and path overrides via environment variables (great for Vercel)
@@ -75,10 +79,15 @@ function crm2_db(): PDO
         ]);
     } else {
         $dir = __DIR__ . '/../data';
-        if (!is_dir($dir)) {
-            mkdir($dir, 0775, true);
+        if (getenv('VERCEL') === '1') {
+            $dbPath = '/tmp/crm.sqlite';
+        } else {
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+            $dbPath = $dir . '/crm.sqlite';
         }
-        $pdo = new PDO('sqlite:' . $dir . '/crm.sqlite', null, null, [
+        $pdo = new PDO('sqlite:' . $dbPath, null, null, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
