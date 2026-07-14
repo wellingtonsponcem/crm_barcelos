@@ -68,7 +68,7 @@ if (!isset($_SESSION['logged_in_user'])) {
       <div class="sidebar-footer">
         <a href="#/configuracoes" class="sidebar-footer-link"><span class="material-symbols-outlined">settings</span><span>Ajustes</span></a>
         <a href="?logout=1" class="sidebar-footer-link" style="color: #ff5b5b;"><span class="material-symbols-outlined">logout</span><span>Sair</span></a>
-        <div style="padding:8px 12px;font-size:9px;color:rgba(255,255,255,.4);font-family:var(--font-mono)">PHP/APACHE</div>
+        <div style="padding:8px 12px;font-size:9px;color:rgba(255,255,255,.4);font-family:var(--font-mono)"><?= getenv('VERCEL') === '1' ? 'VERCEL / PHP' : 'PHP / APACHE' ?></div>
       </div>
     </aside>
 
