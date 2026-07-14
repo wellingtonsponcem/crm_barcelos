@@ -1,5 +1,6 @@
 {
   "framework": null,
+  "outputDirectory": ".",
   "functions": {
     "api/*.php": {
       "runtime": "vercel-php@0.9.0"
