@@ -19,12 +19,19 @@ function crm2_config(): array
     if (getenv('DB_NAME')) $config['db_name'] = getenv('DB_NAME');
     if (getenv('DB_USER')) $config['db_user'] = getenv('DB_USER');
     if (getenv('DB_PASS')) $config['db_pass'] = getenv('DB_PASS');
-    if (getenv('BASE_PATH')) $config['base_path'] = getenv('BASE_PATH');
+    
+    $envBasePath = getenv('BASE_PATH');
+    if ($envBasePath !== false) {
+        $config['base_path'] = $envBasePath;
+    } elseif (getenv('VERCEL') === '1') {
+        // On Vercel, default base_path to empty string if not explicitly defined
+        $config['base_path'] = '';
+    }
 
     if (!isset($config['db_driver'])) {
         $config['db_driver'] = 'sqlite';
     }
-    if (empty($config['base_path'])) {
+    if (!isset($config['base_path'])) {
         $config['base_path'] = crm2_detect_base_path();
     }
 
@@ -34,14 +41,14 @@ function crm2_config(): array
 function crm2_detect_base_path(): string
 {
     $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/crm2/index.php');
-    $base = preg_replace('#/(api/)?index\.php$#', '', $script);
+    $base = preg_replace('#/(api/)?(index|entry)\.php$#', '', $script);
     return rtrim($base ?: '/crm2', '/');
 }
 
 function crm2_base_path(): string
 {
     $config = crm2_config();
-    return rtrim((string)($config['base_path'] ?: crm2_detect_base_path()), '/');
+    return rtrim((string)($config['base_path'] ?? crm2_detect_base_path()), '/');
 }
 
 function crm2_db(): PDO
