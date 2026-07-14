@@ -775,12 +775,13 @@ async function renderMap() {
   );
 }
 function renderSettings() {
-  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Ajustes</h2><p>Ambiente Apache/PHP.</p></div></div><div class="card"><div class="card-body"><p><strong>Base path:</strong> ${esc(CRM.base)}</p><p><strong>API:</strong> ${esc(CRM.base)}/api/index.php</p><p>Para producao na Hostinger, copie <code>config.sample.php</code> para <code>config.php</code> e preencha os dados do MySQL.</p><button class="btn btn-primary" id="testApi"><span class="material-symbols-outlined">wifi</span>Testar API</button></div></div>`;
+  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Ajustes</h2><p>Ambiente Vercel / PHP Serverless.</p></div></div><div class="card"><div class="card-body"><p><strong>Base path:</strong> ${esc(CRM.base || "/")}</p><p><strong>API:</strong> ${esc(CRM.base)}/api/index.php</p><p>Para produção na Vercel, configure as variáveis de ambiente (<code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code>, etc.) no painel do seu projeto na Vercel para conectar a um banco MySQL remoto.</p><button class="btn btn-primary" id="testApi"><span class="material-symbols-outlined">wifi</span>Testar API</button></div></div>`;
   $("#testApi").addEventListener("click", async () => {
     await api("init");
     toast("API PHP funcionando");
   });
 }
+
 async function openPartnerDetail(id) {
   const data = await api("partners", { id });
   const p = data.partner;
