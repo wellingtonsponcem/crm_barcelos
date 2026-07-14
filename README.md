@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Fidelity CRM - Portal de Parcerias
 
-## Getting Started
+Este é um projeto em **PHP puro** com layout e interface em **Vanilla CSS**.
 
-First, run the development server:
+## Como Executar Localmente
 
+Como o projeto é em PHP (e não possui um `package.json`), os comandos `npm run dev` ou `npm` não funcionarão aqui. 
+
+Para rodar o projeto localmente no seu Mac:
+
+1. **Abra o terminal** na pasta do projeto.
+2. **Inicie o servidor embutido do PHP**:
+   ```bash
+   php -S localhost:8000
+   ```
+3. **Abra no navegador**:
+   Acesse [http://localhost:8000](http://localhost:8000)
+
+---
+
+### Dica: Se o comando `php` não for encontrado no seu Mac:
+Você pode instalar o PHP usando o [Homebrew](https://brew.sh/):
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+brew install php
 ```
+Depois disso, o comando `php -S localhost:8000` estará disponível.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estrutura do Projeto
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* `index.php` - Tela principal e layout do CRM (Dashboard, Leads, etc).
+* `api/index.php` - API que gerencia parceiros, alertas, tarefas e o painel.
+* `includes/db.php` - Conectividade com o banco de dados (MySQL ou SQLite local).
+* `assets/` - Arquivos CSS e JavaScript de estilização e comportamento.
+* `public/` - Imagens e assets de exibição da interface.
