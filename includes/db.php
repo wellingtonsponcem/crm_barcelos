@@ -7,11 +7,28 @@ function crm2_config(): array
     $sample = require __DIR__ . '/../config.sample.php';
     $local = __DIR__ . '/../config.php';
     if (is_file($local)) {
-        return array_replace($sample, require $local);
+        $config = array_replace($sample, require $local);
+    } else {
+        $config = $sample;
     }
-    $sample['db_driver'] = 'sqlite';
-    $sample['base_path'] = crm2_detect_base_path();
-    return $sample;
+
+    // Allow database and path overrides via environment variables (great for Vercel)
+    if (getenv('DB_DRIVER')) $config['db_driver'] = getenv('DB_DRIVER');
+    if (getenv('DB_HOST')) $config['db_host'] = getenv('DB_HOST');
+    if (getenv('DB_PORT')) $config['db_port'] = (int)getenv('DB_PORT');
+    if (getenv('DB_NAME')) $config['db_name'] = getenv('DB_NAME');
+    if (getenv('DB_USER')) $config['db_user'] = getenv('DB_USER');
+    if (getenv('DB_PASS')) $config['db_pass'] = getenv('DB_PASS');
+    if (getenv('BASE_PATH')) $config['base_path'] = getenv('BASE_PATH');
+
+    if (!isset($config['db_driver'])) {
+        $config['db_driver'] = 'sqlite';
+    }
+    if (empty($config['base_path'])) {
+        $config['base_path'] = crm2_detect_base_path();
+    }
+
+    return $config;
 }
 
 function crm2_detect_base_path(): string
