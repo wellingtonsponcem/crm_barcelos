@@ -40,8 +40,8 @@ function crm2_config(): array
 
 function crm2_detect_base_path(): string
 {
-    $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/crm2/index.php');
-    $base = preg_replace('#/(api/)?(index|entry)\.php$#', '', $script);
+    $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/crm2/main.php');
+    $base = preg_replace('#/(api/)?(index|entry|main)\.php$#', '', $script);
     return rtrim($base ?: '/crm2', '/');
 }
 
