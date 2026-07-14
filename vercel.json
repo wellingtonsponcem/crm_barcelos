@@ -1,16 +1,13 @@
 {
   "framework": null,
   "functions": {
-    "api/index.php": {
-      "runtime": "vercel-php@0.9.0"
-    },
-    "index.php": {
+    "api/*.php": {
       "runtime": "vercel-php@0.9.0"
     }
   },
   "routes": [
     { "handle": "filesystem" },
     { "src": "/api/(.*)", "dest": "/api/index.php" },
-    { "src": "/(.*)", "dest": "/index.php" }
+    { "src": "/(.*)", "dest": "/api/entry.php" }
   ]
 }
