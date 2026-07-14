@@ -21,7 +21,41 @@ try {
     }
 
     if ($resource === 'users') {
-        $rows = $pdo->query('SELECT id, name, email, role FROM crm2_users ORDER BY id ASC')->fetchAll();
+        if ($method === 'PUT' && $id) {
+            $body = crm2_body();
+            
+            // Check if password change is requested
+            if (!empty($body['new_password'])) {
+                $stmt = $pdo->prepare('SELECT password FROM crm2_users WHERE id = ?');
+                $stmt->execute([$id]);
+                $currPassHash = $stmt->fetchColumn();
+                
+                if (!$currPassHash || password_verify($body['current_password'] ?? '', $currPassHash)) {
+                    $stmt = $pdo->prepare('UPDATE crm2_users SET password = ? WHERE id = ?');
+                    $stmt->execute([password_hash($body['new_password'], PASSWORD_DEFAULT), $id]);
+                } else {
+                    crm2_json(['success' => false, 'error' => 'Senha atual incorreta.'], 400);
+                }
+            }
+            
+            // Update other profile data
+            $name = trim($body['name'] ?? '');
+            $email = trim($body['email'] ?? '');
+            if ($name !== '' && $email !== '') {
+                $stmt = $pdo->prepare('UPDATE crm2_users SET name = ?, email = ?, updated_at = ? WHERE id = ?');
+                $stmt->execute([$name, $email, date('Y-m-d H:i:s'), $id]);
+                
+                // Update session if it's the current user
+                if (isset($_SESSION['logged_in_user']) && (int)$_SESSION['logged_in_user']['id'] === $id) {
+                    $_SESSION['logged_in_user']['name'] = $name;
+                    $_SESSION['logged_in_user']['email'] = $email;
+                    crm2_session_set($_SESSION['logged_in_user']);
+                }
+            }
+            crm2_json(['success' => true]);
+        }
+
+        $rows = $pdo->query('SELECT id, name, email, role, username FROM crm2_users ORDER BY id ASC')->fetchAll();
         crm2_json(['success' => true, 'users' => $rows]);
     }
 

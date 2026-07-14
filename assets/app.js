@@ -775,10 +775,506 @@ async function renderMap() {
   );
 }
 function renderSettings() {
-  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Ajustes</h2><p>Ambiente Vercel / PHP Serverless.</p></div></div><div class="card"><div class="card-body"><p><strong>Base path:</strong> ${esc(CRM.base || "/")}</p><p><strong>API:</strong> ${esc(CRM.base)}/api/index.php</p><p>Para produção na Vercel, configure as variáveis de ambiente (<code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code>, etc.) no painel do seu projeto na Vercel para conectar a um banco MySQL remoto.</p><button class="btn btn-primary" id="testApi"><span class="material-symbols-outlined">wifi</span>Testar API</button></div></div>`;
+  app.innerHTML = `
+<div class="page-header" style="margin-bottom: 24px;">
+  <div class="page-title-group">
+    <h2>Configurações do Sistema</h2>
+    <p>Gerencie seu perfil profissional e preferências globais da plataforma.</p>
+  </div>
+  <button class="btn btn-primary" id="saveAllSettings" style="display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 24px; border-radius: 8px;">
+    <span class="material-symbols-outlined" style="font-size: 20px;">save</span>
+    Salvar Alterações
+  </button>
+</div>
+
+<div class="settings-layout">
+  <!-- Menu de Configurações -->
+  <div class="settings-nav">
+    <button class="settings-nav-btn active" data-section="profile">
+      <span class="material-symbols-outlined">person</span>
+      <span>Perfil do Usuário</span>
+      <span class="material-symbols-outlined chevron">chevron_right</span>
+    </button>
+    <button class="settings-nav-btn" data-section="security">
+      <span class="material-symbols-outlined">shield</span>
+      <span>Segurança</span>
+      <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
+    </button>
+    <button class="settings-nav-btn" data-section="system">
+      <span class="material-symbols-outlined">tune</span>
+      <span>Preferências do Sistema</span>
+      <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
+    </button>
+    <button class="settings-nav-btn" data-section="brand">
+      <span class="material-symbols-outlined">branding_watermark</span>
+      <span>Gestão de Marca</span>
+      <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
+    </button>
+    <button class="settings-nav-btn" data-section="database">
+      <span class="material-symbols-outlined">database</span>
+      <span>Conexão do Banco</span>
+      <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
+    </button>
+  </div>
+
+  <!-- Conteúdo de Configurações -->
+  <div class="settings-content">
+    <!-- Seção: Perfil do Usuário -->
+    <section class="settings-section-card" id="profile">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px; border-bottom: 1px solid var(--outline-variant); padding-bottom: 16px;">
+        <div>
+          <h3>Perfil do Usuário</h3>
+          <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Atualize sua identidade e detalhes de contato.</p>
+        </div>
+        <span class="employee-id-badge">ID do Funcionário: ${CRM.currentUser.id}</span>
+      </div>
+
+      <!-- Avatar Upload -->
+      <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--outline-variant);">
+        <div style="position: relative;">
+          <img class="user-avatar" src="${CRM.base}/public/images/leonardo.png" alt="Avatar" style="width: 96px; height: 96px; border-radius: 12px; border: 2px solid var(--primary-container); object-fit: cover;">
+          <button style="position: absolute; bottom: -8px; right: -8px; background: var(--primary); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <span class="material-symbols-outlined" style="font-size: 18px;">photo_camera</span>
+          </button>
+        </div>
+        <div>
+          <h4 style="font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">Foto do Perfil</h4>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="btn btn-secondary" style="font-size: 13px; padding: 6px 12px;">Enviar Nova</button>
+            <button style="color: var(--error); background: none; border: none; font-size: 13px; font-weight: 600; cursor: pointer;">Remover</button>
+          </div>
+          <p style="font-size: 11px; color: var(--on-surface-variant); margin-top: 8px;">Recomendado: 400x400px. PNG, JPG ou WebP até 5MB.</p>
+        </div>
+      </div>
+
+      <!-- Input fields -->
+      <div class="form-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Nome Completo</label>
+          <input class="form-input" id="profileName" type="text" value="${esc(CRM.currentUser.name)}" style="width: 100%;">
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Cargo / Função</label>
+          <input class="form-input" type="text" value="${esc(roleLabel(CRM.currentUser.role))}" disabled style="width: 100%; opacity: 0.7; background: var(--surface-container-low);">
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Endereço de E-mail</label>
+          <div style="position: relative;">
+            <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--on-surface-variant);">mail</span>
+            <input class="form-input" id="profileEmail" type="email" value="${esc(CRM.currentUser.email)}" style="width: 100%; padding-left: 40px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção: Segurança -->
+    <section class="settings-section-card" id="security">
+      <div style="margin-bottom: 24px;">
+        <h3>Segurança</h3>
+        <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Proteja sua conta com uma senha de alta entropia.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Senha Atual</label>
+          <input class="form-input" id="currentPassword" type="password" placeholder="••••••••••••" style="width: 100%;">
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Nova Senha</label>
+          <input class="form-input" id="newPassword" type="password" placeholder="Digite a nova senha" style="width: 100%;">
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Confirmar Nova Senha</label>
+          <input class="form-input" id="confirmNewPassword" type="password" placeholder="Repita a nova senha" style="width: 100%;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--on-surface-variant);">
+          <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
+          <p style="font-size: 11px;">A nova senha deve conter pelo menos 12 caracteres e incluir caracteres especiais.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção: Preferências do Sistema -->
+    <section class="settings-section-card" id="system">
+      <div style="margin-bottom: 24px;">
+        <h3>Preferências do Sistema</h3>
+        <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Adapte o ambiente operacional ao seu fluxo de trabalho.</p>
+      </div>
+
+      <div class="form-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;">
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Idioma da Interface</label>
+          <select class="form-select" style="width: 100%;">
+            <option>Português (BR)</option>
+            <option>Inglês (US)</option>
+            <option>Espanhol (ES)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 6px; text-transform: uppercase;">Fuso Horário</label>
+          <select class="form-select" style="width: 100%;">
+            <option>(GMT-03:00) Horário de Brasília</option>
+            <option>(GMT-05:00) Eastern Time</option>
+            <option>(GMT+00:00) UTC</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--outline-variant); padding-top: 24px;">
+        <h4 style="font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 16px; text-transform: uppercase;">Canais de Notificação</h4>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Email Channel -->
+          <label class="settings-channel-item">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div class="channel-icon-wrapper">
+                <span class="material-symbols-outlined">mail</span>
+              </div>
+              <div>
+                <p style="font-weight: 600; font-size: 14px;">Notificações por E-mail</p>
+                <p style="font-size: 12px; color: var(--on-surface-variant);">Resumos diários e alertas de parcerias críticas.</p>
+              </div>
+            </div>
+            <div class="switch-wrapper">
+              <input type="checkbox" checked class="switch-input">
+              <span class="switch-slider"></span>
+            </div>
+          </label>
+
+          <!-- Push Channel -->
+          <label class="settings-channel-item">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div class="channel-icon-wrapper">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </div>
+              <div>
+                <p style="font-weight: 600; font-size: 14px;">Notificações Push no Desktop</p>
+                <p style="font-size: 12px; color: var(--on-surface-variant);">Alertas em tempo real sobre movimentações do funil.</p>
+              </div>
+            </div>
+            <div class="switch-wrapper">
+              <input type="checkbox" class="switch-input">
+              <span class="switch-slider"></span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção: Gestão de Marca -->
+    <section class="settings-section-card" id="brand">
+      <div style="margin-bottom: 24px;">
+        <h3>Gestão de Marca</h3>
+        <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Revise os padrões visuais corporativos aplicados ao seu portal.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <div class="brand-preview-card">
+          <p style="font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; margin-bottom: 12px;">Cor Primária</p>
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary); margin: 0 auto 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"></div>
+          <code style="font-family: var(--font-mono); font-size: 12px; background: var(--surface-container); padding: 4px 8px; border-radius: 4px;">#002046</code>
+        </div>
+        <div class="brand-preview-card">
+          <p style="font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; margin-bottom: 12px;">Destaque do Painel</p>
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-container); margin: 0 auto 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"></div>
+          <code style="font-family: var(--font-mono); font-size: 12px; background: var(--surface-container); padding: 4px 8px; border-radius: 4px;">#1B365D</code>
+        </div>
+        <div class="brand-preview-card">
+          <p style="font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; margin-bottom: 12px;">Tipografia do Sistema</p>
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; height: 48px; justify-content: center;">
+            <span style="font-size: 16px; font-weight: 700;">Inter Bold</span>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--on-surface-variant);">JetBrains Mono</span>
+          </div>
+          <code style="font-family: var(--font-mono); font-size: 12px; background: var(--surface-container); padding: 4px 8px; border-radius: 4px;">Padrão Global</code>
+        </div>
+      </div>
+
+      <div style="padding: 16px; background: rgba(0, 32, 70, 0.05); border: 1px solid rgba(0, 32, 70, 0.15); border-radius: 8px; display: flex; align-items: center; gap: 16px;">
+        <span class="material-symbols-outlined" style="color: var(--primary); font-size: 24px;">verified_user</span>
+        <div style="flex: 1;">
+          <p style="font-size: 13px; font-weight: 600; color: var(--primary);">Política Corporativa Aplicada</p>
+          <p style="font-size: 11px; color: var(--on-surface-variant);">As configurações de identidade visual estão bloqueadas pelo administrador regional. Para solicitar alterações, contate o setor de Design.</p>
+        </div>
+        <button style="color: var(--primary); background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline;">Solicitar Acesso</button>
+      </div>
+    </section>
+
+    <!-- Seção: Conexão do Banco de Dados -->
+    <section class="settings-section-card" id="database">
+      <div style="margin-bottom: 24px;">
+        <h3>Conexão do Banco de Dados</h3>
+        <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Verifique o status da API PHP e da base SQLite/MySQL na Vercel.</p>
+      </div>
+
+      <div style="background: var(--surface-container-low); padding: 20px; border-radius: 10px; border: 1px solid var(--outline-variant); display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <p><strong>Caminho Base:</strong> <code style="font-family: var(--font-mono); background: var(--surface-container-high); padding: 2px 6px; border-radius: 4px;">${esc(CRM.base || "/")}</code></p>
+        <p><strong>URL da API:</strong> <code style="font-family: var(--font-mono); background: var(--surface-container-high); padding: 2px 6px; border-radius: 4px;">${esc(CRM.base)}/api/index.php</code></p>
+        <p style="font-size: 13px; color: var(--on-surface-variant); line-height: 1.5;">
+          Para produção na Vercel, configure as variáveis de ambiente (<code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code>, etc.) no painel do seu projeto na Vercel para conectar a um banco MySQL remoto. Se as variáveis não forem definidas, o sistema usará um banco SQLite temporário local (gravado em <code>/tmp/crm.sqlite</code>).
+        </p>
+      </div>
+
+      <button class="btn btn-primary" id="testApi" style="display: flex; align-items: center; gap: 8px;">
+        <span class="material-symbols-outlined">wifi</span>
+        Testar Conexão API
+      </button>
+    </section>
+  </div>
+</div>
+
+<style>
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .settings-section-card {
+    background-color: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-top: 4px solid var(--primary);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+  }
+  .settings-section-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .employee-id-badge {
+    background: var(--secondary-container);
+    color: var(--on-secondary-container);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .settings-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: none;
+    border: 1px solid transparent;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: var(--on-surface-variant);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+  .settings-nav-btn:hover {
+    background: var(--surface-container-high);
+  }
+  .settings-nav-btn.active {
+    background: var(--surface-container-lowest);
+    border-color: var(--outline-variant);
+    color: var(--primary);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+  }
+  .settings-nav-btn.active .chevron {
+    color: var(--primary);
+  }
+  .settings-channel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--surface-container-low);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .settings-channel-item:hover {
+    background: var(--surface-container-high);
+  }
+  .channel-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(0, 32, 70, 0.1);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .brand-preview-card {
+    padding: 24px 16px;
+    border: 1px solid var(--outline-variant);
+    border-radius: 8px;
+    background: var(--surface-container-lowest);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Modern Switches */
+  .switch-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+  }
+  .switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--outline-variant);
+    transition: .3s;
+    border-radius: 24px;
+  }
+  .switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  .switch-input:checked + .switch-slider {
+    background-color: var(--primary);
+  }
+  .switch-input:checked + .switch-slider:before {
+    transform: translateX(20px);
+  }
+  
+  @media (max-width: 992px) {
+    .settings-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+  `;
+
+  // Bind settings sidebar clicks
+  $$(".settings-nav-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.section;
+      const element = document.getElementById(targetId);
+      if (element) {
+        const yOffset = -80; // height of header + spacing
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      
+      // Update active states
+      $$(".settings-nav-btn").forEach((b) => {
+        const isCurrent = b === btn;
+        b.classList.toggle("active", isCurrent);
+        b.querySelector(".chevron").style.display = isCurrent ? "block" : "none";
+      });
+    });
+  });
+
+  // Scroll tracking with Intersection Observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        $$(".settings-nav-btn").forEach((btn) => {
+          const isCurrent = btn.dataset.section === id;
+          btn.classList.toggle("active", isCurrent);
+          btn.querySelector(".chevron").style.display = isCurrent ? "block" : "none";
+        });
+      }
+    });
+  }, {
+    root: null,
+    rootMargin: "-20% 0px -70% 0px",
+    threshold: 0
+  });
+
+  document.querySelectorAll(".settings-section-card").forEach(section => observer.observe(section));
+
+  // Bind test API button
   $("#testApi").addEventListener("click", async () => {
-    await api("init");
-    toast("API PHP funcionando");
+    try {
+      await api("init");
+      toast("API PHP e Banco de dados funcionando!");
+    } catch (e) {
+      toast("Erro ao testar API: " + e.message);
+    }
+  });
+
+  // Bind save settings button
+  $("#saveAllSettings").addEventListener("click", async () => {
+    const btn = $("#saveAllSettings");
+    const originalContent = btn.innerHTML;
+    
+    const name = $("#profileName").value.trim();
+    const email = $("#profileEmail").value.trim();
+    const currentPassword = $("#currentPassword").value;
+    const newPassword = $("#newPassword").value;
+    const confirmNewPassword = $("#confirmNewPassword").value;
+
+    if (!name || !email) {
+      toast("Nome e e-mail são obrigatórios!");
+      return;
+    }
+
+    const body = { name, email };
+
+    if (newPassword) {
+      if (newPassword.length < 12) {
+        toast("A nova senha deve ter pelo menos 12 caracteres!");
+        return;
+      }
+      if (newPassword !== confirmNewPassword) {
+        toast("As senhas não coincidem!");
+        return;
+      }
+      if (!currentPassword) {
+        toast("Digite sua senha atual para confirmar a alteração!");
+        return;
+      }
+      body.current_password = currentPassword;
+      body.new_password = newPassword;
+    }
+
+    btn.innerHTML = `<span class="material-symbols-outlined animate-spin" style="font-size: 20px;">sync</span> Gravando...`;
+    btn.disabled = true;
+
+    try {
+      await api("users", { id: CRM.currentUser.id }, { method: "PUT", body });
+      
+      // Update window user variable in place
+      if (window.CRM2_CURRENT_USER && String(window.CRM2_CURRENT_USER.id) === String(CRM.currentUser.id)) {
+        window.CRM2_CURRENT_USER.name = name;
+        window.CRM2_CURRENT_USER.email = email;
+      }
+      CRM.currentUser.name = name;
+      CRM.currentUser.email = email;
+      $("#currentUserName").textContent = name;
+      
+      toast("Alterações salvas com sucesso!");
+      
+      // Reset password fields
+      $("#currentPassword").value = "";
+      $("#newPassword").value = "";
+      $("#confirmNewPassword").value = "";
+    } catch (e) {
+      toast("Erro ao salvar: " + e.message);
+    } finally {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    }
   });
 }
 
