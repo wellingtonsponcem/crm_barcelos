@@ -22,6 +22,10 @@ function api(resource, params = {}, options = {}) {
     init.body = JSON.stringify(init.body);
   }
   return fetch(url, init).then(async (r) => {
+    if (r.status === 401) {
+      window.location.reload();
+      return new Promise(() => {});
+    }
     const j = await r.json().catch(() => ({}));
     if (!r.ok || j.success === false) throw new Error(j.error || "Erro na API");
     return j;
@@ -159,17 +163,12 @@ async function init() {
   bindChrome();
   const d = await api("users");
   CRM.users = d.users || [];
-  CRM.currentUser = CRM.users[0] || { id: "", name: "Usuario", role: "admin" };
+  CRM.currentUser = window.CRM2_CURRENT_USER || CRM.users[0] || { id: "", name: "Usuario", role: "admin" };
   $("#currentUserName").textContent = CRM.currentUser.name;
-  $("#userSwitcher").innerHTML = CRM.users
-    .map((u) => `<option value="${u.id}">${roleLabel(u.role)}</option>`)
-    .join("");
-  $("#userSwitcher").addEventListener("change", (e) => {
-    CRM.currentUser =
-      CRM.users.find((u) => String(u.id) === e.target.value) || CRM.currentUser;
-    $("#currentUserName").textContent = CRM.currentUser.name;
-    route();
-  });
+  const roleEl = $("#currentUserRole");
+  if (roleEl) {
+    roleEl.textContent = roleLabel(CRM.currentUser.role);
+  }
   window.addEventListener("hashchange", route);
   route();
 }

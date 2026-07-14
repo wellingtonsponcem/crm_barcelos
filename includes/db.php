@@ -121,9 +121,28 @@ function crm2_install(PDO $pdo): void
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         role VARCHAR(50) NOT NULL,
+        username VARCHAR(50),
+        password VARCHAR(255),
         created_at $timestamp $nowDefault,
         updated_at $timestamp $nowDefault
     )");
+
+    // Migration: Add username and password columns if they don't exist
+    try {
+        $pdo->query("SELECT username FROM crm2_users LIMIT 1");
+    } catch (Throwable $e) {
+        try {
+            $pdo->exec("ALTER TABLE crm2_users ADD COLUMN username VARCHAR(50)");
+            $pdo->exec("ALTER TABLE crm2_users ADD COLUMN password VARCHAR(255)");
+            
+            // Set default login credentials for existing users
+            $pdo->exec("UPDATE crm2_users SET username = 'leonardo', password = '" . password_hash('123456', PASSWORD_DEFAULT) . "' WHERE role = 'director'");
+            $pdo->exec("UPDATE crm2_users SET username = 'admin', password = '" . password_hash('admin', PASSWORD_DEFAULT) . "' WHERE role = 'admin'");
+            $pdo->exec("UPDATE crm2_users SET username = 'maria', password = '" . password_hash('123456', PASSWORD_DEFAULT) . "' WHERE role = 'commercial'");
+            $pdo->exec("UPDATE crm2_users SET username = 'carlos', password = '" . password_hash('123456', PASSWORD_DEFAULT) . "' WHERE role = 'operational'");
+        } catch (Throwable $ignore) {
+        }
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS crm2_partners (
         id $id,
@@ -241,12 +260,12 @@ function crm2_install(PDO $pdo): void
 function crm2_seed(PDO $pdo): void
 {
     $users = [
-        ['Leonardo Barcelos', 'leonardo.barcelos@fidelitycrm.com', 'director'],
-        ['Jean Ponce', 'jean.ponce@fidelitycrm.com', 'admin'],
-        ['Maria Eduarda', 'maria.eduarda@fidelitycrm.com', 'commercial'],
-        ['Carlos Silva', 'carlos.silva@fidelitycrm.com', 'operational'],
+        ['Leonardo Barcelos', 'leonardo.barcelos@fidelitycrm.com', 'director', 'leonardo', password_hash('123456', PASSWORD_DEFAULT)],
+        ['Jean Ponce', 'jean.ponce@fidelitycrm.com', 'admin', 'admin', password_hash('admin', PASSWORD_DEFAULT)],
+        ['Maria Eduarda', 'maria.eduarda@fidelitycrm.com', 'commercial', 'maria', password_hash('123456', PASSWORD_DEFAULT)],
+        ['Carlos Silva', 'carlos.silva@fidelitycrm.com', 'operational', 'carlos', password_hash('123456', PASSWORD_DEFAULT)],
     ];
-    $stmt = $pdo->prepare('INSERT INTO crm2_users (name, email, role) VALUES (?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO crm2_users (name, email, role, username, password) VALUES (?, ?, ?, ?, ?)');
     foreach ($users as $user) {
         $stmt->execute($user);
     }

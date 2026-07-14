@@ -1,6 +1,43 @@
 <?php
+session_start();
 require_once __DIR__ . '/includes/db.php';
 $basePath = crm2_base_path();
+
+// Log out if requested
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: " . $basePath . "/");
+    exit();
+}
+
+// Handle login post
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_action'])) {
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    
+    try {
+        $pdo = crm2_db();
+        $stmt = $pdo->prepare('SELECT * FROM crm2_users WHERE username = ?');
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['logged_in_user'] = $user;
+            header("Location: " . $basePath . "/");
+            exit();
+        } else {
+            $login_error = "Usuário ou senha incorretos.";
+        }
+    } catch (Throwable $e) {
+        $login_error = "Erro no banco de dados: " . $e->getMessage();
+    }
+}
+
+// If not logged in, show login screen
+if (!isset($_SESSION['logged_in_user'])) {
+    include __DIR__ . '/includes/login.php';
+    exit();
+}
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -30,6 +67,7 @@ $basePath = crm2_base_path();
       <button class="sidebar-btn" id="newPartnerSidebar">Novo Parceiro</button>
       <div class="sidebar-footer">
         <a href="#/configuracoes" class="sidebar-footer-link"><span class="material-symbols-outlined">settings</span><span>Ajustes</span></a>
+        <a href="?logout=1" class="sidebar-footer-link" style="color: #ff5b5b;"><span class="material-symbols-outlined">logout</span><span>Sair</span></a>
         <div style="padding:8px 12px;font-size:9px;color:rgba(255,255,255,.4);font-family:var(--font-mono)">PHP/APACHE</div>
       </div>
     </aside>
@@ -50,7 +88,7 @@ $basePath = crm2_base_path();
           <div class="user-profile">
             <div class="user-info">
               <p class="user-name" id="currentUserName">Carregando...</p>
-              <select class="user-role" id="userSwitcher"></select>
+              <span class="user-role" id="currentUserRole" style="font-size: 11px; opacity: 0.7;">Carregando...</span>
             </div>
             <img class="user-avatar" src="<?= htmlspecialchars($basePath) ?>/public/images/leonardo.png" alt="Avatar">
           </div>
@@ -73,6 +111,12 @@ $basePath = crm2_base_path();
 
   <script>
     window.CRM2_BASE_PATH = <?= json_encode($basePath, JSON_UNESCAPED_SLASHES) ?>;
+    window.CRM2_CURRENT_USER = <?= json_encode([
+        'id' => $_SESSION['logged_in_user']['id'],
+        'name' => $_SESSION['logged_in_user']['name'],
+        'role' => $_SESSION['logged_in_user']['role'],
+        'email' => $_SESSION['logged_in_user']['email']
+    ], JSON_UNESCAPED_SLASHES) ?>;
   </script>
   <script src="<?= htmlspecialchars($basePath) ?>/assets/app.js?v=layout5"></script>
 </body>

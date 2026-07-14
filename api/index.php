@@ -1,12 +1,18 @@
 <?php
-
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/../includes/db.php';
 
 try {
-    $pdo = crm2_db();
     $resource = $_GET['resource'] ?? '';
+    
+    // Protect all API endpoints (except DB initialization)
+    if ($resource !== 'init' && !isset($_SESSION['logged_in_user'])) {
+        crm2_json(['success' => false, 'error' => 'Não autorizado. Por favor, faça login.'], 401);
+    }
+
+    $pdo = crm2_db();
     $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
