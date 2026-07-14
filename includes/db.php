@@ -325,3 +325,57 @@ function crm2_body(): array
     $json = json_decode($raw, true);
     return is_array($json) ? $json : ($_POST ?: []);
 }
+
+function crm2_session_start(): void
+{
+    if (!isset($_SESSION)) {
+        $_SESSION = [];
+    }
+    
+    if (isset($_COOKIE['crm2_session'])) {
+        $cookie = $_COOKIE['crm2_session'];
+        $parts = explode('.', $cookie);
+        if (count($parts) === 2) {
+            [$payload_b64, $sig] = $parts;
+            $payload_json = base64_decode($payload_b64);
+            $expected_sig = hash_hmac('sha256', $payload_b64, 'fidelity-crm-secret-key-2026');
+            if (hash_equals($expected_sig, $sig)) {
+                $_SESSION['logged_in_user'] = json_decode($payload_json, true);
+                return;
+            }
+        }
+    }
+    $_SESSION['logged_in_user'] = null;
+}
+
+function crm2_session_set(array $user): void
+{
+    if (!isset($_SESSION)) {
+        $_SESSION = [];
+    }
+    
+    $payload_json = json_encode([
+        'id' => $user['id'],
+        'name' => $user['name'],
+        'role' => $user['role'],
+        'email' => $user['email']
+    ]);
+    $payload_b64 = base64_encode($payload_json);
+    $sig = hash_hmac('sha256', $payload_b64, 'fidelity-crm-secret-key-2026');
+    $cookie_val = $payload_b64 . '.' . $sig;
+    
+    $secure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (getenv('VERCEL') === '1');
+    setcookie('crm2_session', $cookie_val, time() + 86400 * 7, '/', '', $secure, true);
+    $_SESSION['logged_in_user'] = $user;
+}
+
+function crm2_session_destroy(): void
+{
+    if (!isset($_SESSION)) {
+        $_SESSION = [];
+    }
+    
+    $secure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (getenv('VERCEL') === '1');
+    setcookie('crm2_session', '', time() - 3600, '/', '', $secure, true);
+    $_SESSION['logged_in_user'] = null;
+}

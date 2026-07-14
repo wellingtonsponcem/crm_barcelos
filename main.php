@@ -1,11 +1,11 @@
 <?php
-session_start();
 require_once __DIR__ . '/includes/db.php';
+crm2_session_start();
 $basePath = crm2_base_path();
 
 // Log out if requested
 if (isset($_GET['logout'])) {
-    session_destroy();
+    crm2_session_destroy();
     header("Location: " . $basePath . "/");
     exit();
 }
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_action'])) {
         $user = $stmt->fetch();
         
         if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['logged_in_user'] = $user;
+            crm2_session_set($user);
             header("Location: " . $basePath . "/");
             exit();
         } else {
