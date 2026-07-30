@@ -102,12 +102,12 @@ function estimatedValue(p) {
   if (p.type === "landowner" && p.asking_price) return money(p.asking_price);
   return "N/A";
 }
-function toast(m) {
+function toast(m, type) {
   const e = $("#toast");
   e.textContent = m;
-  e.classList.add("active");
+  e.className = "active" + (type === "error" ? " error" : "");
   clearTimeout(e._timer);
-  e._timer = setTimeout(() => e.classList.remove("active"), 2600);
+  e._timer = setTimeout(() => e.classList.remove("active", "error"), 2600);
 }
 function loading(t = "Carregando dados...") {
   app.innerHTML = `<div class="empty-state"><strong>${t}</strong></div>`;
@@ -674,16 +674,17 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
   const data = await api("partners", { type: activeType });
   const partners = data.partners || [];
   const stages = stageSets(activeType);
+  
+  const normalizeStage = (ps) => {
+    if (!ps) return stages[0];
+    const a = ps.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return stages.find(s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === a) || stages[0];
+  };
+
   const grouped = Object.fromEntries(stages.map((s) => [s, []]));
   partners.forEach((p) => {
-    let targetStage = stages.find(st => st.toLowerCase() === (p.pipeline_stage || "").toLowerCase()) || p.pipeline_stage;
-    if (!grouped[targetStage]) {
-      if (p.pipeline_stage === "Due diligence" || p.pipeline_stage === "Auditoria Prévia (Due Diligence)") targetStage = "Auditoria Prévia (Due Diligence)";
-      else if (p.pipeline_stage === "Qualificacao") targetStage = "Qualificação";
-      else if (p.pipeline_stage === "Negociacao") targetStage = "Negociação";
-      else targetStage = stages[0];
-    }
-    if (grouped[targetStage]) grouped[targetStage].push(p);
+    const target = normalizeStage(p.pipeline_stage);
+    if (grouped[target]) grouped[target].push(p);
     else grouped[stages[0]].push(p);
   });
   const total = partners.reduce(
@@ -780,16 +781,19 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
       column.classList.remove("drag-hover");
       const partnerId = e.dataTransfer.getData("text/plain");
       const newStage = column.dataset.stage;
-      if (partnerId && newStage) {
-        try {
-          const partner = partners.find(p => String(p.id) === String(partnerId));
-          const body = partner ? { ...partner, pipeline_stage: newStage } : { pipeline_stage: newStage };
-          await api("partners", { id: partnerId }, { method: "PUT", body });
-          toast(`Movido para: ${newStage}`);
-          renderPipeline(activeType, partnerId);
-        } catch (err) {
-          console.error("Erro ao mover parceiro no funil:", err);
-        }
+      if (!partnerId || !newStage) return;
+      const partner = partners.find(p => String(p.id) === String(partnerId));
+      if (!partner) {
+        toast("Erro: parceiro não encontrado", "error");
+        return;
+      }
+      try {
+        const body = { pipeline_stage: newStage };
+        await api("partners", { id: partnerId }, { method: "PUT", body });
+        toast(`Movido para: ${newStage}`);
+        renderPipeline(activeType, partnerId);
+      } catch (err) {
+        toast("Erro ao mover parceiro. Tente novamente.", "error");
       }
     });
   });
