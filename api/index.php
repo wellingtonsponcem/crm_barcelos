@@ -210,6 +210,13 @@ function crm2_partner_get(PDO $pdo, int $id): void
 function crm2_partner_save(PDO $pdo, ?int $id = null): void
 {
     $body = crm2_body();
+    if ($id) {
+        $existing = crm2_one($pdo, 'SELECT * FROM crm2_partners WHERE id=?', [$id]);
+        if (!$existing) {
+            crm2_json(['success' => false, 'error' => 'Parceiro não encontrado.'], 404);
+        }
+        $body = array_merge($existing, $body);
+    }
     if (empty($body['name']) || empty($body['type'])) {
         crm2_json(['success' => false, 'error' => 'Nome e tipo são obrigatórios.'], 400);
     }

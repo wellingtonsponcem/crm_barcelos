@@ -739,7 +739,9 @@ async function renderPipeline(activeType = "investor") {
       const newStage = column.dataset.stage;
       if (partnerId && newStage) {
         try {
-          await api("partners", { id: partnerId }, { method: "PUT", body: { pipeline_stage: newStage } });
+          const partner = partners.find(p => String(p.id) === String(partnerId));
+          const body = partner ? { ...partner, pipeline_stage: newStage } : { pipeline_stage: newStage };
+          await api("partners", { id: partnerId }, { method: "PUT", body });
           toast(`Movido para: ${newStage}`);
           renderPipeline(activeType);
         } catch (err) {
