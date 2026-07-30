@@ -669,15 +669,23 @@ function exportCsv() {
   a.click();
   URL.revokeObjectURL(a.href);
 }
-async function renderPipeline(activeType = "investor") {
+async function renderPipeline(activeType = "investor", movedPartnerId = null) {
   loading("Carregando funil...");
   const data = await api("partners", { type: activeType });
   const partners = data.partners || [];
   const stages = stageSets(activeType);
   const grouped = Object.fromEntries(stages.map((s) => [s, []]));
-  partners.forEach((p) =>
-    grouped[grouped[p.pipeline_stage] ? p.pipeline_stage : stages[0]].push(p),
-  );
+  partners.forEach((p) => {
+    let targetStage = stages.find(st => st.toLowerCase() === (p.pipeline_stage || "").toLowerCase()) || p.pipeline_stage;
+    if (!grouped[targetStage]) {
+      if (p.pipeline_stage === "Due diligence" || p.pipeline_stage === "Auditoria Prévia (Due Diligence)") targetStage = "Auditoria Prévia (Due Diligence)";
+      else if (p.pipeline_stage === "Qualificacao") targetStage = "Qualificação";
+      else if (p.pipeline_stage === "Negociacao") targetStage = "Negociação";
+      else targetStage = stages[0];
+    }
+    if (grouped[targetStage]) grouped[targetStage].push(p);
+    else grouped[stages[0]].push(p);
+  });
   const total = partners.reduce(
     (s, p) =>
       s +
@@ -688,7 +696,7 @@ async function renderPipeline(activeType = "investor") {
           : 0),
     0,
   );
-  app.innerHTML = `<div style="display:flex;flex-direction:column;height:calc(100vh - 145px);position:relative;width:100%;max-width:100%;overflow:hidden"><div class="page-header" style="margin-bottom:16px;flex-shrink:0"><div class="page-title-group"><h2>Funil Tatico de Parcerias</h2><p>Arraste visualmente os parceiros e acompanhe as negociacoes por etapa comercial.</p></div><div class="page-actions"><button class="btn btn-primary" id="newPipelinePartner"><span class="material-symbols-outlined">add</span>Nova Oportunidade</button></div></div><div class="card" style="margin-bottom:16px;padding:12px 16px;flex-shrink:0;background-color:var(--surface-container-low)"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:bold;text-transform:uppercase;color:var(--primary);letter-spacing:.05em">Funil Ativo:</span>${pipelineTypeButton(activeType, "investor", "Captacao de Investidores")}${pipelineTypeButton(activeType, "operator", "Avaliacao de Socios/Operadores")}${pipelineTypeButton(activeType, "landowner", "Expansao de Terrenos")}</div></div><div class="pipeline-board" style="display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;flex-grow:1;padding:0 4px 16px;align-items:stretch">${stages.map((s, i) => pipelineColumn(s, grouped[s], i, stages.length)).join("")}<div style="flex:0 0 16px;width:16px"></div></div><footer style="height:48px;background-color:var(--surface-container-lowest);border-top:1px solid var(--outline-variant);display:flex;align-items:center;padding:0 24px;justify-content:space-between;font-size:11px;flex-shrink:0"><div style="display:flex;gap:24px"><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Valor Total do Funil:</span><strong style="color:var(--primary);font-family:var(--font-mono)">${money(total)}</strong></div><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Ciclo Medio:</span><strong style="color:var(--primary);font-family:var(--font-mono)">24 dias</strong></div><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Taxa de Conversao:</span><strong style="color:var(--primary);font-family:var(--font-mono)">68%</strong></div></div><div style="display:flex;gap:16px"><span>Acao Imediata</span><span>Alta Prioridade</span></div></footer></div>`;
+  app.innerHTML = `<div style="display:flex;flex-direction:column;height:calc(100vh - 110px);position:relative;width:100%;max-width:100%;overflow:hidden"><div class="page-header" style="margin-bottom:12px;flex-shrink:0"><div class="page-title-group"><h2>Funil Tático de Parcerias</h2><p>Arraste visualmente os parceiros e acompanhe as negociações por etapa comercial.</p></div><div class="page-actions"><button class="btn btn-primary" id="newPipelinePartner"><span class="material-symbols-outlined">add</span>Nova Oportunidade</button></div></div><div class="card" style="margin-bottom:12px;padding:12px 16px;flex-shrink:0;background-color:var(--surface-container-low)"><div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:bold;text-transform:uppercase;color:var(--primary);letter-spacing:.05em">Funil Ativo:</span>${pipelineTypeButton(activeType, "investor", "Captação de Investidores")}${pipelineTypeButton(activeType, "operator", "Avaliação de Sócios/Operadores")}${pipelineTypeButton(activeType, "landowner", "Expansão de Terrenos")}</div><div style="display:flex;gap:6px"><button class="btn btn-secondary" id="scrollBoardLeft" style="padding:4px 8px" title="Rolar para esquerda"><span class="material-symbols-outlined" style="font-size:18px">chevron_left</span></button><button class="btn btn-secondary" id="scrollBoardRight" style="padding:4px 8px" title="Rolar para direita"><span class="material-symbols-outlined" style="font-size:18px">chevron_right</span></button></div></div></div><div class="pipeline-board" style="display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;flex:1;padding:0 4px 16px;margin-bottom:4px;align-items:stretch">${stages.map((s, i) => pipelineColumn(s, grouped[s], i, stages.length, movedPartnerId)).join("")}<div style="flex:0 0 16px;width:16px"></div></div><footer style="height:44px;background-color:var(--surface-container-lowest);border-top:1px solid var(--outline-variant);display:flex;align-items:center;padding:0 24px;justify-content:space-between;font-size:11px;flex-shrink:0"><div style="display:flex;gap:24px"><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Valor Total do Funil:</span><strong style="color:var(--primary);font-family:var(--font-mono)">${money(total)}</strong></div><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Ciclo Médio:</span><strong style="color:var(--primary);font-family:var(--font-mono)">24 dias</strong></div><div><span style="color:var(--on-surface-variant);font-weight:bold;text-transform:uppercase;margin-right:6px">Taxa de Conversão:</span><strong style="color:var(--primary);font-family:var(--font-mono)">68%</strong></div></div><div style="display:flex;gap:16px"><span>Ação Imediata</span><span>Alta Prioridade</span></div></footer></div>`;
   $("#newPipelinePartner").addEventListener("click", () =>
     openPartnerForm({ type: activeType }),
   );
@@ -699,7 +707,6 @@ async function renderPipeline(activeType = "investor") {
     b.addEventListener("click", () => openPartnerDetail(b.dataset.id)),
   );
 
-  // Wheel horizontal scroll on board
   const pipelineBoardEl = $(".pipeline-board");
   if (pipelineBoardEl) {
     pipelineBoardEl.addEventListener("wheel", (e) => {
@@ -708,6 +715,13 @@ async function renderPipeline(activeType = "investor") {
         pipelineBoardEl.scrollLeft += e.deltaY;
       }
     }, { passive: false });
+
+    $("#scrollBoardLeft")?.addEventListener("click", () => {
+      pipelineBoardEl.scrollBy({ left: -340, behavior: "smooth" });
+    });
+    $("#scrollBoardRight")?.addEventListener("click", () => {
+      pipelineBoardEl.scrollBy({ left: 340, behavior: "smooth" });
+    });
   }
 
   // HTML5 Drag and Drop Handlers
@@ -743,7 +757,7 @@ async function renderPipeline(activeType = "investor") {
           const body = partner ? { ...partner, pipeline_stage: newStage } : { pipeline_stage: newStage };
           await api("partners", { id: partnerId }, { method: "PUT", body });
           toast(`Movido para: ${newStage}`);
-          renderPipeline(activeType);
+          renderPipeline(activeType, partnerId);
         } catch (err) {
           console.error("Erro ao mover parceiro no funil:", err);
         }
@@ -754,16 +768,17 @@ async function renderPipeline(activeType = "investor") {
 function pipelineTypeButton(a, t, l) {
   return `<button class="btn ${a === t ? "btn-primary" : "btn-secondary"} pipeline-type" data-type="${t}" style="font-size:11px;padding:6px 12px">${l}</button>`;
 }
-function pipelineColumn(s, list, i, total) {
+function pipelineColumn(s, list, i, total, movedPartnerId = null) {
   const conv = Math.max(10, Math.round(85 - i * (75 / total)));
-  return `<div class="pipeline-column" data-stage="${esc(s)}" style="flex:0 0 280px;display:flex;flex-direction:column;max-height:100%;background-color:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:8px"><div class="pipeline-column-header" style="padding:12px 16px;border-bottom:1px solid var(--outline-variant);background-color:var(--surface-container)"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:bold;color:var(--primary);text-transform:uppercase">${esc(s)}</span><span style="font-size:10px;font-weight:bold;background-color:var(--surface-container-high);padding:2px 6px;border-radius:10px;color:var(--on-surface-variant)">${list.length}</span></div></div><div style="padding:8px 16px;background-color:rgba(0,32,70,.02);border-bottom:1px solid var(--outline-variant)"><div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;color:var(--on-surface-variant)"><span>TAXA DE CONVERSÃO</span><span style="color:var(--primary)">${conv}%</span></div><div style="width:100%;height:3px;background-color:var(--surface-container-highest);margin-top:4px;border-radius:1.5px;overflow:hidden"><div style="width:${conv}%;height:100%;background-color:var(--primary)"></div></div></div><div class="pipeline-cards" style="padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-grow:1;min-height:200px">${list.length ? list.map(pipelineCard).join("") : '<div style="padding:32px 12px;font-style:italic;font-size:11px;text-align:center;color:var(--outline)">Sem contatos</div>'}</div></div>`;
+  return `<div class="pipeline-column" data-stage="${esc(s)}" style="flex:0 0 280px;display:flex;flex-direction:column;max-height:100%;background-color:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:8px"><div class="pipeline-column-header" style="padding:12px 16px;border-bottom:1px solid var(--outline-variant);background-color:var(--surface-container)"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:bold;color:var(--primary);text-transform:uppercase">${esc(s)}</span><span style="font-size:10px;font-weight:bold;background-color:var(--surface-container-high);padding:2px 6px;border-radius:10px;color:var(--on-surface-variant)">${list.length}</span></div></div><div style="padding:8px 16px;background-color:rgba(0,32,70,.02);border-bottom:1px solid var(--outline-variant)"><div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;color:var(--on-surface-variant)"><span>TAXA DE CONVERSÃO</span><span style="color:var(--primary)">${conv}%</span></div><div style="width:100%;height:3px;background-color:var(--surface-container-highest);margin-top:4px;border-radius:1.5px;overflow:hidden"><div style="width:${conv}%;height:100%;background-color:var(--primary)"></div></div></div><div class="pipeline-cards" style="padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-grow:1;min-height:200px">${list.length ? list.map(p => pipelineCard(p, movedPartnerId)).join("") : '<div style="padding:32px 12px;font-style:italic;font-size:11px;text-align:center;color:var(--outline)">Sem contatos</div>'}</div></div>`;
 }
-function pipelineCard(p) {
+function pipelineCard(p, movedPartnerId = null) {
   const score = Number(p.score || 0);
   const stars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 40 ? 3 : 2;
   const val = estimatedValue(p);
   const pr = score >= 80;
-  return `<div class="pipeline-card" draggable="true" data-id="${p.id}" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritario</span>' : ""}</div><div style="display:flex;gap:2px;color:var(--primary);margin-bottom:8px">${Array.from(
+  const isJustDropped = String(p.id) === String(movedPartnerId);
+  return `<div class="pipeline-card ${isJustDropped ? 'just-dropped' : ''}" draggable="true" data-id="${p.id}" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritario</span>' : ""}</div><div style="display:flex;gap:2px;color:var(--primary);margin-bottom:8px">${Array.from(
     { length: 5 },
   )
     .map(
