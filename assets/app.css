@@ -1032,7 +1032,7 @@ body {
 .kanban-col { min-width: 280px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); }
 .kanban-head { padding: 12px 16px; font-size: 12px; font-weight: 800; color: var(--primary); border-bottom: 1px solid var(--outline-variant); text-transform: uppercase; display: flex; justify-content: space-between; }
 .kanban-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-.map-lite { min-height: 420px; background: linear-gradient(135deg, #eef2f7, #ffffff); border: 1px solid var(--outline-variant); position: relative; overflow: hidden; }
+.map-lite { min-height: 420px; background: linear-gradient(135deg, #eef2f7, #ffffff); border: 1px solid var(--outline-variant); position: relative; overflow: visible; margin-bottom: 24px; }
 .map-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--error); box-shadow: 0 0 0 6px rgba(186,26,26,.12); }
 .toast { position: fixed; right: 24px; bottom: 24px; background: var(--primary); color: white; padding: 12px 16px; display: none; z-index: 1200; box-shadow: var(--shadow-lg); }
 .toast.active { display: block; }
@@ -1135,7 +1135,7 @@ body {
 /* Tags de queda absolutas */
 .funnel-drop-tag-container {
   position: absolute;
-  top: -28px;
+  top: -42px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1144,7 +1144,7 @@ body {
 
 .funnel-drop-tag-line {
   width: 1px;
-  height: 16px;
+  height: 18px;
   background: var(--outline-variant);
 }
 

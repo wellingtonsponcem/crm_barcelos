@@ -276,7 +276,7 @@ async function renderDashboard() {
   
   <div class="card" style="border-top:4px solid var(--primary);margin-bottom:24px">
     <div class="card-header">
-      <span class="card-title"><span class="material-symbols-outlined">filter_alt</span>Funil de Conversão de Investidores (Stitch Flow)</span>
+      <span class="card-title"><span class="material-symbols-outlined">filter_alt</span>Funil de Conversão de Investidores</span>
     </div>
     <div class="card-body">${renderFunnel(dash.funnel || [])}</div>
   </div>
@@ -411,33 +411,33 @@ function renderFunnel(rows) {
   const total = countOutreach || 1;
 
   const steps = [
-    { key: "outreach", title: "Initial Outreach", count: countOutreach, pct: 100, label: "100% Volume", class: "", drop: null },
+    { key: "outreach", title: "Contato Inicial", count: countOutreach, pct: 100, label: "100% Volume", class: "", drop: null },
     { 
       key: "qualification", 
-      title: "Qualification", 
+      title: "Qualificação", 
       count: countQualification, 
       pct: Math.round((countQualification / total) * 100), 
-      label: `${Math.round((countQualification / total) * 100)}% CR`,
+      label: `${Math.round((countQualification / total) * 100)}% Taxa de Conversão`,
       class: "pl-4",
-      drop: countOutreach > countQualification ? `-${Math.round(((countOutreach - countQualification) / countOutreach) * 100)}% Drop` : null
+      drop: countOutreach > countQualification ? `-${Math.round(((countOutreach - countQualification) / countOutreach) * 100)}% Queda` : null
     },
     { 
       key: "negotiation", 
-      title: "Negotiation", 
+      title: "Negociação", 
       count: countNegotiation, 
       pct: Math.round((countNegotiation / total) * 100), 
-      label: `${Math.round((countNegotiation / total) * 100)}% CR`,
+      label: `${Math.round((countNegotiation / total) * 100)}% Taxa de Conversão`,
       class: "pl-8",
-      drop: countQualification > countNegotiation ? `-${Math.round(((countQualification - countNegotiation) / countQualification) * 100)}% Stagnation` : null
+      drop: countQualification > countNegotiation ? `-${Math.round(((countQualification - countNegotiation) / countQualification) * 100)}% Estagnação` : null
     },
     { 
       key: "closing", 
-      title: "Closed-Won", 
+      title: "Fechado / Ganho", 
       count: countClosing, 
       pct: Math.round((countClosing / total) * 100), 
-      label: `${Math.round((countClosing / total) * 100)}% Final`,
+      label: `${Math.round((countClosing / total) * 100)}% Conversão Final`,
       class: "pl-12",
-      drop: countNegotiation > countClosing ? `-${Math.round(((countNegotiation - countClosing) / countNegotiation) * 100)}% Drop` : null
+      drop: countNegotiation > countClosing ? `-${Math.round(((countNegotiation - countClosing) / countNegotiation) * 100)}% Queda` : null
     }
   ];
 
@@ -447,17 +447,17 @@ function renderFunnel(rows) {
       if (idx > 0) {
         let leftPx = idx === 1 ? 40 : 56;
         let badgeClass = "drop-red";
-        let labelText = s.drop || "Optimal";
+        let labelText = s.drop || "Ideal";
 
         if (idx === 1) {
           badgeClass = "drop-red";
-          labelText = s.drop || "-0% Drop";
+          labelText = s.drop || "-0% Queda";
         } else if (idx === 2) {
           badgeClass = "drop-yellow";
           labelText = s.drop || "Estável";
         } else if (idx === 3) {
           badgeClass = "drop-blue";
-          labelText = s.pct >= 15 ? "Optimal" : (s.drop || "17% Final");
+          labelText = s.pct >= 15 ? "Ideal" : (s.drop || "17% Conversão Final");
         }
 
         dropHtml = `<div class="funnel-drop-tag-container" style="left:${leftPx}px">
