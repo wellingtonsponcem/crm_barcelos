@@ -118,12 +118,12 @@ function stageSets(t) {
       investor: [
         "Novo lead",
         "Primeiro contato",
-        "Qualificacao",
-        "Reuniao estrategica",
-        "Apresentacao do modelo",
+        "Qualificação",
+        "Reunião estratégica",
+        "Apresentação do modelo",
         "Envio de proposta",
-        "Due diligence",
-        "Negociacao",
+        "Auditoria Prévia (Due Diligence)",
+        "Negociação",
         "Contrato",
         "Aporte realizado",
         "Investidor ativo",
@@ -698,20 +698,70 @@ async function renderPipeline(activeType = "investor") {
   $$(".open-partner").forEach((b) =>
     b.addEventListener("click", () => openPartnerDetail(b.dataset.id)),
   );
+
+  // Wheel horizontal scroll on board
+  const pipelineBoardEl = $(".pipeline-board");
+  if (pipelineBoardEl) {
+    pipelineBoardEl.addEventListener("wheel", (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        pipelineBoardEl.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  }
+
+  // HTML5 Drag and Drop Handlers
+  $$(".pipeline-card").forEach((card) => {
+    card.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", card.dataset.id);
+      e.dataTransfer.effectAllowed = "move";
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      $$(".pipeline-column").forEach((col) => col.classList.remove("drag-hover"));
+    });
+  });
+
+  $$(".pipeline-column").forEach((column) => {
+    column.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      column.classList.add("drag-hover");
+    });
+    column.addEventListener("dragleave", () => {
+      column.classList.remove("drag-hover");
+    });
+    column.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      column.classList.remove("drag-hover");
+      const partnerId = e.dataTransfer.getData("text/plain");
+      const newStage = column.dataset.stage;
+      if (partnerId && newStage) {
+        try {
+          await api("partners", { id: partnerId }, { method: "PUT", body: { pipeline_stage: newStage } });
+          toast(`Movido para: ${newStage}`);
+          renderPipeline(activeType);
+        } catch (err) {
+          console.error("Erro ao mover parceiro no funil:", err);
+        }
+      }
+    });
+  });
 }
 function pipelineTypeButton(a, t, l) {
   return `<button class="btn ${a === t ? "btn-primary" : "btn-secondary"} pipeline-type" data-type="${t}" style="font-size:11px;padding:6px 12px">${l}</button>`;
 }
 function pipelineColumn(s, list, i, total) {
   const conv = Math.max(10, Math.round(85 - i * (75 / total)));
-  return `<div class="pipeline-column" style="flex:0 0 280px;display:flex;flex-direction:column;max-height:100%;background-color:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:8px"><div class="pipeline-column-header" style="padding:12px 16px;border-bottom:1px solid var(--outline-variant);background-color:var(--surface-container)"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:bold;color:var(--primary);text-transform:uppercase">${esc(s)}</span><span style="font-size:10px;font-weight:bold;background-color:var(--surface-container-high);padding:2px 6px;border-radius:10px;color:var(--on-surface-variant)">${list.length}</span></div></div><div style="padding:8px 16px;background-color:rgba(0,32,70,.02);border-bottom:1px solid var(--outline-variant)"><div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;color:var(--on-surface-variant)"><span>CONV. RATE</span><span style="color:var(--primary)">${conv}%</span></div><div style="width:100%;height:3px;background-color:var(--surface-container-highest);margin-top:4px;border-radius:1.5px;overflow:hidden"><div style="width:${conv}%;height:100%;background-color:var(--primary)"></div></div></div><div class="pipeline-cards" style="padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-grow:1;min-height:200px">${list.length ? list.map(pipelineCard).join("") : '<div style="padding:32px 12px;font-style:italic;font-size:11px;text-align:center;color:var(--outline)">Sem contatos</div>'}</div></div>`;
+  return `<div class="pipeline-column" data-stage="${esc(s)}" style="flex:0 0 280px;display:flex;flex-direction:column;max-height:100%;background-color:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:8px"><div class="pipeline-column-header" style="padding:12px 16px;border-bottom:1px solid var(--outline-variant);background-color:var(--surface-container)"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:bold;color:var(--primary);text-transform:uppercase">${esc(s)}</span><span style="font-size:10px;font-weight:bold;background-color:var(--surface-container-high);padding:2px 6px;border-radius:10px;color:var(--on-surface-variant)">${list.length}</span></div></div><div style="padding:8px 16px;background-color:rgba(0,32,70,.02);border-bottom:1px solid var(--outline-variant)"><div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;color:var(--on-surface-variant)"><span>TAXA DE CONVERSÃO</span><span style="color:var(--primary)">${conv}%</span></div><div style="width:100%;height:3px;background-color:var(--surface-container-highest);margin-top:4px;border-radius:1.5px;overflow:hidden"><div style="width:${conv}%;height:100%;background-color:var(--primary)"></div></div></div><div class="pipeline-cards" style="padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-grow:1;min-height:200px">${list.length ? list.map(pipelineCard).join("") : '<div style="padding:32px 12px;font-style:italic;font-size:11px;text-align:center;color:var(--outline)">Sem contatos</div>'}</div></div>`;
 }
 function pipelineCard(p) {
   const score = Number(p.score || 0);
   const stars = score >= 90 ? 5 : score >= 70 ? 4 : score >= 40 ? 3 : 2;
   const val = estimatedValue(p);
   const pr = score >= 80;
-  return `<div class="pipeline-card" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritario</span>' : ""}</div><div style="display:flex;gap:2px;color:var(--primary);margin-bottom:8px">${Array.from(
+  return `<div class="pipeline-card" draggable="true" data-id="${p.id}" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritario</span>' : ""}</div><div style="display:flex;gap:2px;color:var(--primary);margin-bottom:8px">${Array.from(
     { length: 5 },
   )
     .map(
@@ -1468,7 +1518,7 @@ async function openPartnerDetail(id) {
   const profile = data.profile || {};
   openModal(
     p.name,
-    `<div class="page-header" style="margin-bottom:20px"><div class="page-title-group"><h2>${esc(p.name)}</h2><p>${typeName(p.type)} - ${esc(p.city || "")}/${esc(p.state || "")} - Score ${p.score}</p></div><div class="page-actions"><button class="btn btn-secondary" id="editPartner"><span class="material-symbols-outlined">edit</span>Editar</button><button class="btn btn-danger" id="archivePartner"><span class="material-symbols-outlined">archive</span>Arquivar</button></div></div><div class="grid-2col"><div class="card"><div class="card-header"><span class="card-title">Dados comerciais</span></div><div class="card-body"><p><strong>Telefone:</strong> ${esc(p.phone || "-")}</p><p><strong>WhatsApp:</strong> ${esc(p.whatsapp || "-")}</p><p><strong>Email:</strong> ${esc(p.email || "-")}</p><p><strong>Origem:</strong> ${esc(p.source || "-")}</p><p><strong>Proxima acao:</strong> ${esc(p.next_action || "-")}</p><p><strong>Notas:</strong> ${esc(p.notes || "-")}</p></div></div><div class="card"><div class="card-header"><span class="card-title">Perfil</span></div><div class="card-body">${profileHtml(p.type, profile)}</div></div></div><div class="card"><div class="card-header"><span class="card-title">Tarefas</span><button class="btn btn-secondary" id="addTask"><span class="material-symbols-outlined">add_task</span>Adicionar</button></div><div class="table-wrapper"><table class="table"><thead><tr><th>Tarefa</th><th>Vencimento</th><th>Prioridade</th><th>Status</th><th></th></tr></thead><tbody>${(data.tasks || []).map((t) => `<tr><td>${esc(t.title)}</td><td>${esc(t.due_date || "")}</td><td>${badge(t.priority)}</td><td>${esc(t.status)}</td><td><button class="btn btn-secondary complete-task" data-id="${t.id}">Concluir</button></td></tr>`).join("") || '<tr><td colspan="5">Sem tarefas.</td></tr>'}</tbody></table></div></div>`,
+    `<div class="page-header" style="margin-bottom:20px"><div class="page-title-group"><h2>${esc(p.name)}</h2><p>${typeName(p.type)} - ${esc(p.city || "")}/${esc(p.state || "")} - Score ${p.score}</p></div><div class="page-actions"><button class="btn btn-secondary" id="editPartner"><span class="material-symbols-outlined">edit</span>Editar</button><button class="btn btn-danger" id="archivePartner"><span class="material-symbols-outlined">archive</span>Arquivar</button></div></div><div class="grid-2col"><div class="card"><div class="card-header"><span class="card-title">Dados comerciais</span></div><div class="card-body"><p><strong>Telefone:</strong> ${esc(p.phone || "-")}</p><p><strong>WhatsApp:</strong> ${esc(p.whatsapp || "-")}</p><p><strong>Email:</strong> ${esc(p.email || "-")}</p><p><strong>Origem:</strong> ${esc(p.source || "-")}</p><p><strong>Proxima acao:</strong> ${esc(p.next_action || "-")}</p><p><strong>Notas:</strong> ${esc(p.notes || "-")}</p></div></div><div class="card"><div class="card-header"><span class="card-title">Perfil</span></div><div class="card-body">${profileHtml(p.type, profile)}</div></div></div><div class="card"><div class="card-header"><span class="card-title">Tarefas</span><button class="btn btn-secondary" id="addTask"><span class="material-symbols-outlined">add_task</span>Adicionar</button></div><div class="table-wrapper"><table class="table"><thead><tr><th>Tarefa</th><th>Vencimento</th><th>Prioridade</th><th>Status</th><th style="text-align:right">Ação</th></tr></thead><tbody>${(data.tasks || []).map((t) => `<tr><td><strong>${esc(t.title)}</strong></td><td><span style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;color:var(--on-surface-variant)">${esc(t.due_date ? t.due_date.replace(/:\d{2}$/, '') : "-")}</span></td><td>${badge(t.priority)}</td><td>${esc(t.status)}</td><td style="text-align:right"><button class="btn btn-secondary complete-task" data-id="${t.id}" style="padding:4px 8px;font-size:11px">Concluir</button></td></tr>`).join("") || '<tr><td colspan="5">Sem tarefas.</td></tr>'}</tbody></table></div></div>`,
   );
   $("#editPartner").addEventListener("click", () =>
     openPartnerForm({ ...p, ...profile }),

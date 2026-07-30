@@ -84,6 +84,39 @@ body {
   background: var(--outline);
 }
 
+/* Horizontal Scrollbar destacada para o Funil */
+.pipeline-board::-webkit-scrollbar {
+  height: 10px;
+}
+.pipeline-board::-webkit-scrollbar-track {
+  background: var(--surface-container-high);
+  border-radius: 5px;
+}
+.pipeline-board::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 5px;
+}
+.pipeline-board::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-container);
+}
+
+/* Drag and Drop visual feedback */
+.pipeline-card[draggable="true"] {
+  cursor: grab;
+}
+.pipeline-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+.pipeline-card.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--primary) !important;
+  transform: scale(0.97);
+}
+.pipeline-column.drag-hover {
+  background-color: var(--surface-container-high) !important;
+  border: 2px dashed var(--primary) !important;
+}
+
 /* Navigation Layout */
 .app-container {
   display: flex;
@@ -1068,7 +1101,7 @@ body {
 .modal {
   background: #ffffff;
   border-left: 1px solid var(--outline-variant);
-  width: min(640px, 92vw);
+  width: min(780px, 94vw);
   height: 100vh;
   max-height: 100vh;
   box-shadow: -8px 0 32px rgba(0, 32, 70, 0.2);
@@ -1106,6 +1139,21 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.modal .table th {
+  padding: 10px 12px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.modal .table td {
+  padding: 12px;
+  font-size: 12px;
+}
+
+.modal .table-wrapper {
+  overflow-x: visible;
 }
 .empty-state { border: 2px dashed var(--outline-variant); padding: 32px; text-align: center; color: var(--on-surface-variant); background: var(--surface-container-low); }
 .kanban { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; }
