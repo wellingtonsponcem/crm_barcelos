@@ -186,7 +186,7 @@ function crm2_partners_list(PDO $pdo): void
     $sql = "SELECT p.*, u.name responsible_name,
         i.available_capital,i.potential_value,i.financial_profile,i.decision_capacity,i.proposal_sent,
         o.sector_experience,o.management_experience,o.operational_availability,o.trust_level,
-        l.land_location,l.asking_price,l.negotiation_type,l.commercial_potential
+        l.land_location,l.asking_price,l.negotiation_type,l.commercial_potential,l.latitude,l.longitude
         FROM crm2_partners p
         LEFT JOIN crm2_users u ON p.responsible_user_id=u.id
         LEFT JOIN crm2_investor_profiles i ON p.id=i.partner_id

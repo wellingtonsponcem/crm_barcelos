@@ -941,6 +941,27 @@ body {
   margin-top: 8px;
 }
 
+/* Leaflet custom styling */
+.leaflet-container {
+  font-family: inherit !important;
+  border-radius: 12px;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0, 32, 70, 0.15) !important;
+  padding: 2px !important;
+}
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  top: 8px !important;
+  right: 8px !important;
+  color: var(--outline) !important;
+  font-size: 18px !important;
+}
+
 /* Offline sync status banner */
 .sync-banner {
   background-color: var(--warning-container);

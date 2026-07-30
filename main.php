@@ -46,6 +46,8 @@ if (!isset($_SESSION['logged_in_user'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fidelity CRM | Gestao Estrategica de Postos</title>
   <meta name="description" content="CRM tatico para gestao de investidores, operadores e proprietarios de terrenos.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link rel="stylesheet" href="<?= htmlspecialchars($basePath) ?>/assets/app.css?v=layout5">
 </head>
 <body>

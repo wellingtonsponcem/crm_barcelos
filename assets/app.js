@@ -767,12 +767,196 @@ async function renderReports() {
   const m = dash.metrics || {};
   app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Relatorios</h2><p>Resumo executivo do pipeline.</p></div><div class="page-actions"><button class="btn btn-primary" onclick="window.print()"><span class="material-symbols-outlined">print</span>Exportar PDF</button></div></div><div class="kpi-grid">${kpi("Pipeline", money(m.capitalAvailable), "Capital disponivel", "payments")}${kpi("Terrenos", money(m.landValue), "Valor solicitado", "location_on")}${kpi("Alertas Ativos", m.activeAlerts, `${m.highAlerts || 0} alta prioridade`, "notifications_active")}</div>${efficiencyTable()}`;
 }
-async function renderMap() {
-  const data = await api("partners", { type: "landowner" });
-  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Mapa</h2><p>Terrenos e oportunidades por localizacao.</p></div></div><div class="map-lite">${(data.partners || []).map((p, i) => `<button class="map-dot" data-id="${p.id}" title="${esc(p.name)}" style="left:${18 + i * 18}%;top:${32 + (i % 3) * 16}%"></button>`).join("")}</div><div style="margin-top:16px" class="list-grid">${(data.partners || []).map((p) => `<div class="partner-card open-partner" data-id="${p.id}"><div class="partner-card-title">${esc(p.name)}</div><div class="partner-meta"><span>${typeName(p.type)}</span><span>${esc(p.city || "")}/${esc(p.state || "")}</span><span>Score ${p.score || 0}</span></div></div>`).join("")}</div>`;
-  $$(".open-partner,.map-dot").forEach((e) =>
-    e.addEventListener("click", () => openPartnerDetail(e.dataset.id)),
-  );
+async function renderMap(selectedType = "") {
+  const data = await api("partners", selectedType ? { type: selectedType } : {});
+  const partners = data.partners || [];
+
+  const totalValue = partners.reduce((sum, p) => sum + (Number(p.asking_price || p.potential_value || p.available_capital) || 0), 0);
+
+  app.innerHTML = `
+    <div class="page-header" style="margin-bottom:20px">
+      <div class="page-title-group">
+        <h2>Mapa Geográfico de Oportunidades</h2>
+        <p>Visualização geoespacial de terrenos, investidores e sócios gestores cadastrados.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary" id="recenterMapBtn" style="font-size:12px">
+          <span class="material-symbols-outlined" style="font-size:16px">center_focus_strong</span>
+          Centralizar Mapa
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros de Tipo e KPIs -->
+    <div class="card" style="margin-bottom:20px;padding:16px;background-color:var(--surface-container-low)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:bold;color:var(--on-surface-variant);margin-right:4px">Filtrar Categoria:</span>
+          <button class="btn ${selectedType === '' ? 'btn-primary' : 'btn-secondary'} map-filter-btn" data-type="" style="padding:4px 12px;font-size:11px">Todos (${partners.length})</button>
+          <button class="btn ${selectedType === 'landowner' ? 'btn-primary' : 'btn-secondary'} map-filter-btn" data-type="landowner" style="padding:4px 12px;font-size:11px">Terrenos / Proprietários</button>
+          <button class="btn ${selectedType === 'investor' ? 'btn-primary' : 'btn-secondary'} map-filter-btn" data-type="investor" style="padding:4px 12px;font-size:11px">Investidores</button>
+          <button class="btn ${selectedType === 'operator' ? 'btn-primary' : 'btn-secondary'} map-filter-btn" data-type="operator" style="padding:4px 12px;font-size:11px">Sócios Gestores</button>
+        </div>
+        <div style="display:flex;gap:16px;font-size:12px;align-items:center">
+          <div><span style="color:var(--on-surface-variant)">Mapeados:</span> <strong>${partners.length}</strong></div>
+          <div><span style="color:var(--on-surface-variant)">Valor em Campo:</span> <strong style="color:var(--primary)">${money(totalValue)}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container do Mapa Real (Leaflet / OpenStreetMap) -->
+    <div id="interactiveMap" style="height: 480px; width: 100%; border-radius: 12px; border: 1px solid var(--outline-variant); overflow: hidden; margin-bottom: 24px; box-shadow: var(--shadow-sm); z-index: 1;"></div>
+
+    <!-- Lista de Parceiros Mapeados -->
+    <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <h3 style="font-size:14px;font-weight:bold;color:var(--primary)">Parceiros Exibidos no Mapa (${partners.length})</h3>
+    </div>
+    <div class="list-grid">
+      ${partners.map(p => `
+        <div class="partner-card open-partner map-card-item" data-id="${p.id}" style="cursor:pointer">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div class="partner-card-title">${esc(p.name)}</div>
+            <span style="font-size:10px;font-weight:bold;padding:2px 6px;border-radius:4px;background-color:var(--surface-container-high);color:var(--primary)">
+              ${typeName(p.type)}
+            </span>
+          </div>
+          <div class="partner-meta" style="margin-top:8px">
+            <span><span class="material-symbols-outlined" style="font-size:12px;vertical-align:-2px">location_on</span> ${esc(p.city || "-")}/${esc(p.state || "-")}</span>
+            <span>Score ${p.score || 0}</span>
+            ${p.asking_price ? `<span>${money(p.asking_price)}</span>` : (p.available_capital ? `<span>${money(p.available_capital)}</span>` : '')}
+          </div>
+        </div>
+      `).join("") || '<div style="padding:24px;color:var(--outline)">Nenhum parceiro encontrado nesta categoria.</div>'}
+    </div>
+  `;
+
+  // Bind filter buttons
+  $$(".map-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => renderMap(btn.dataset.type));
+  });
+
+  // Bind partner card click to open partner detail modal
+  $$(".open-partner").forEach(e => {
+    e.addEventListener("click", () => openPartnerDetail(e.dataset.id));
+  });
+
+  // Map initialization
+  const cityCoords = {
+    "Linhares": [-19.390822, -40.068411],
+    "Colatina": [-19.539828, -40.627798],
+    "Governador Valadares": [-18.849646, -41.957596],
+    "Vitória": [-20.3155, -40.3128],
+    "Vila Velha": [-20.3297, -40.2925],
+    "São Paulo": [-23.5505, -46.6333],
+    "Rio de Janeiro": [-22.9068, -43.1729],
+    "Belo Horizonte": [-19.9167, -43.9345]
+  };
+
+  const initLeafletMap = () => {
+    const mapElement = document.getElementById("interactiveMap");
+    if (!mapElement) return;
+
+    if (typeof L === "undefined") {
+      mapElement.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-container-low);color:var(--on-surface-variant);gap:12px;padding:24px;text-align:center">
+          <span class="material-symbols-outlined" style="font-size:48px;color:var(--primary)">map</span>
+          <p style="font-size:14px;font-weight:bold">Mapa em Modo de Carregamento</p>
+          <p style="font-size:12px">Conectando aos serviços de mapas geoespaciais (OpenStreetMap)...</p>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const map = L.map("interactiveMap", { scrollWheelZoom: false }).setView([-19.5, -40.8], 8);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      const markersGroup = [];
+
+      partners.forEach(p => {
+        let lat = p.latitude ? parseFloat(p.latitude) : null;
+        let lng = p.longitude ? parseFloat(p.longitude) : null;
+
+        if (!lat || !lng) {
+          if (p.city && cityCoords[p.city]) {
+            [lat, lng] = cityCoords[p.city];
+          } else if (p.state === "SP") { [lat, lng] = cityCoords["São Paulo"]; }
+          else if (p.state === "RJ") { [lat, lng] = cityCoords["Rio de Janeiro"]; }
+          else if (p.state === "MG") { [lat, lng] = cityCoords["Belo Horizonte"]; }
+          else if (p.state === "ES") { [lat, lng] = cityCoords["Vitória"]; }
+        }
+
+        if (lat && lng) {
+          const pinColor = p.type === 'landowner' ? '#ba1a1a' : (p.type === 'investor' ? '#002046' : '#0d9488');
+          const iconSymbol = p.type === 'landowner' ? 'location_on' : (p.type === 'investor' ? 'payments' : 'store');
+
+          const icon = L.divIcon({
+            className: 'custom-leaflet-marker',
+            html: `<div style="background-color:${pinColor};width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:#fff;"><span class="material-symbols-outlined" style="font-size:18px;">${iconSymbol}</span></div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+
+          const popupContent = `
+            <div class="map-popup-card">
+              <div class="map-popup-title">${esc(p.name)}</div>
+              <div class="map-popup-detail">
+                <span>Categoria:</span>
+                <strong>${typeName(p.type)}</strong>
+              </div>
+              <div class="map-popup-detail">
+                <span>Localização:</span>
+                <span>${esc(p.city || "")}/${esc(p.state || "")}</span>
+              </div>
+              ${p.asking_price ? `<div class="map-popup-detail"><span>Valor Pedido:</span> <strong style="color:var(--primary)">${money(p.asking_price)}</strong></div>` : ""}
+              ${p.available_capital ? `<div class="map-popup-detail"><span>Capital Disponível:</span> <strong style="color:var(--primary)">${money(p.available_capital)}</strong></div>` : ""}
+              ${p.land_location ? `<div class="map-popup-detail"><span>Endereço:</span> <span>${esc(p.land_location)}</span></div>` : ""}
+              <div class="map-popup-detail">
+                <span>Score Comercial:</span>
+                <strong>${p.score || 0} pts</strong>
+              </div>
+              <div class="map-popup-actions">
+                <button class="btn btn-primary btn-sm map-popup-btn" data-id="${p.id}" style="width:100%;padding:6px 10px;font-size:11px;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:4px">
+                  <span class="material-symbols-outlined" style="font-size:14px">visibility</span>
+                  Ver Ficha Completa
+                </button>
+              </div>
+            </div>
+          `;
+
+          const marker = L.marker([lat, lng], { icon }).addTo(map).bindPopup(popupContent);
+          markersGroup.push(marker);
+        }
+      });
+
+      if (markersGroup.length > 0) {
+        const group = new L.featureGroup(markersGroup);
+        map.fitBounds(group.getBounds(), { padding: [50, 50] });
+      }
+
+      document.getElementById("recenterMapBtn")?.addEventListener("click", () => {
+        if (markersGroup.length > 0) {
+          const group = new L.featureGroup(markersGroup);
+          map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        }
+      });
+
+      map.on("popupopen", (e) => {
+        const container = e.popup.getElement();
+        const btn = container?.querySelector(".map-popup-btn");
+        if (btn) {
+          btn.onclick = () => openPartnerDetail(btn.dataset.id);
+        }
+      });
+    } catch (err) {
+      console.error("Map initialization error:", err);
+    }
+  };
+
+  setTimeout(initLeafletMap, 50);
 }
 function renderSettings() {
   app.innerHTML = `
