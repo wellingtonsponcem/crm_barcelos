@@ -1135,7 +1135,7 @@ body {
 /* Tags de queda absolutas */
 .funnel-drop-tag-container {
   position: absolute;
-  top: -24px;
+  top: -28px;
   display: flex;
   flex-direction: column;
   align-items: center;
