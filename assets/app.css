@@ -86,22 +86,25 @@ body {
 
 /* Horizontal Scrollbar destacada para o Funil de 12 Colunas */
 .pipeline-board {
-  scrollbar-width: auto;
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
   scrollbar-color: var(--primary) var(--surface-container-high);
 }
 
 .pipeline-board::-webkit-scrollbar {
-  height: 12px !important;
+  height: 14px !important;
   display: block !important;
 }
 .pipeline-board::-webkit-scrollbar-track {
   background: var(--surface-container-high) !important;
-  border-radius: 6px !important;
+  border-radius: 7px !important;
+  border: 1px solid var(--outline-variant) !important;
   margin: 0 4px;
 }
 .pipeline-board::-webkit-scrollbar-thumb {
   background: var(--primary) !important;
-  border-radius: 6px !important;
+  border-radius: 7px !important;
   border: 2px solid var(--surface-container-high) !important;
 }
 .pipeline-board::-webkit-scrollbar-thumb:hover {
