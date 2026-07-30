@@ -989,12 +989,12 @@ function renderSettings() {
       <span>Preferências do Sistema</span>
       <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
     </button>
-    <button class="settings-nav-btn" data-section="brand">
+    <button class="settings-nav-btn" data-section="brand" style="display: none;">
       <span class="material-symbols-outlined">branding_watermark</span>
       <span>Gestão de Marca</span>
       <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
     </button>
-    <button class="settings-nav-btn" data-section="database">
+    <button class="settings-nav-btn" data-section="database" style="display: none;">
       <span class="material-symbols-outlined">database</span>
       <span>Conexão do Banco</span>
       <span class="material-symbols-outlined chevron" style="display: none;">chevron_right</span>
@@ -1144,8 +1144,8 @@ function renderSettings() {
       </div>
     </section>
 
-    <!-- Seção: Gestão de Marca -->
-    <section class="settings-section-card" id="brand">
+    <!-- Seção: Gestão de Marca (Oculta temporariamente) -->
+    <section class="settings-section-card" id="brand" style="display: none;">
       <div style="margin-bottom: 24px;">
         <h3>Gestão de Marca</h3>
         <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Revise os padrões visuais corporativos aplicados ao seu portal.</p>
@@ -1182,8 +1182,8 @@ function renderSettings() {
       </div>
     </section>
 
-    <!-- Seção: Conexão do Banco de Dados -->
-    <section class="settings-section-card" id="database">
+    <!-- Seção: Conexão do Banco de Dados (Oculta temporariamente) -->
+    <section class="settings-section-card" id="database" style="display: none;">
       <div style="margin-bottom: 24px;">
         <h3>Conexão do Banco de Dados</h3>
         <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 4px;">Verifique o status da API PHP e da base SQLite/MySQL na Vercel.</p>
