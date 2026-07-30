@@ -86,6 +86,10 @@ body {
 
 /* Horizontal Scrollbar destacada para o Funil de 12 Colunas */
 .pipeline-board {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
   overflow-x: scroll !important;
   overflow-y: hidden !important;
   scrollbar-width: thin;
@@ -421,9 +425,12 @@ body {
   margin-top: var(--header-height);
   padding: var(--gutter);
   width: calc(100% - var(--sidebar-width));
+  max-width: calc(100% - var(--sidebar-width));
+  min-width: 0;
   min-height: calc(100vh - var(--header-height));
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* Page Header */
