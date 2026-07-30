@@ -65,7 +65,7 @@ body {
   color: var(--on-background);
   min-height: 100vh;
   display: flex;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 /* Scrollbar styling */
@@ -92,7 +92,8 @@ body {
   align-items: stretch !important;
   width: max-content !important;
   max-width: none !important;
-  min-width: calc(12 * 270px + 11 * 16px + 8px) !important;
+  /* Explicit total width for 12 columns (12*270 + 11*16 + 8) = 3424px */
+  min-width: 3424px !important;
   box-sizing: border-box !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
