@@ -65,7 +65,7 @@ body {
   color: var(--on-background);
   min-height: 100vh;
   display: flex;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Scrollbar styling */
@@ -94,8 +94,7 @@ body {
   max-width: 100% !important;
   min-width: 0 !important;
   box-sizing: border-box !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
+  overflow: auto !important;
   padding: 4px 4px 20px 4px !important;
   scrollbar-width: thin !important;
   scrollbar-color: #002046 #e2e8f0 !important;
@@ -791,16 +790,6 @@ body {
 .badge-info {
   background-color: var(--info-container);
   color: var(--info);
-}
-
-/* Pipeline Kanban Board */
-.pipeline-board {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding: 8px 0 24px 0;
-  min-height: 500px;
-  align-items: flex-start;
 }
 
 .pipeline-column {
