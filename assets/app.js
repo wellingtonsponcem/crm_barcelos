@@ -189,6 +189,7 @@ function route() {
   if (path === "/mapa") return renderMap();
   if (path === "/agenda") return renderAgenda();
   if (path === "/configuracoes") return renderSettings();
+  if (path === "/score-explicacao") return renderScoreExplanation();
   renderDashboard();
 }
 async function renderDashboard() {
@@ -566,7 +567,7 @@ async function renderPartners(params = {}) {
           : 0),
     0,
   );
-  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Diretorio Geral de Parceiros</h2><p>Consulte, filtre e gerencie todos os investidores, operadores e proprietarios cadastrados.</p></div><div class="page-actions"><button class="btn btn-secondary" id="exportCsv"><span class="material-symbols-outlined">download</span>Exportar CSV</button><button class="btn btn-primary" id="newPartner"><span class="material-symbols-outlined">person_add</span>Novo Parceiro</button></div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px">${statBox("Total de Parceiros", total, "var(--primary)")}${statBox("Em Negociacao", pipe, "var(--warning)")}${statBox("Aporte/Valor Medio", money(total ? tv / total : 0), "var(--primary)")}${statBox("Score Critico (90+)", crit, "var(--error)")}</div><div class="card" style="margin-bottom:24px;padding:16px;background-color:var(--surface-container-low)"><div style="display:flex;flex-direction:column;gap:16px"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="font-size:11px;font-weight:bold;color:var(--on-surface-variant);margin-right:8px">Filtrar por Tipo:</span>${typeFilterButton("", "Todos")}${typeFilterButton("investor", "Investidores")}${typeFilterButton("operator", "Socios Gestores")}${typeFilterButton("landowner", "Proprietarios")}<button class="btn btn-secondary" style="padding:4px 12px;font-size:11px">Objecoes Pendentes</button><button class="btn btn-secondary" style="padding:4px 12px;font-size:11px">Docs Pendentes</button></div><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div style="position:relative;flex-grow:1;min-width:220px"><input class="form-input" id="partnerSearch" placeholder="Buscar por nome, cidade ou email..." value="${esc(params.search || "")}" style="width:100%;padding-left:32px;height:36px;font-size:12px"><span class="material-symbols-outlined" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--outline)">search</span></div><select class="form-select" id="stateFilter" style="height:36px;font-size:12px"><option value="">Estado</option><option>SP</option><option>RJ</option><option>MG</option><option>ES</option></select><select class="form-select" id="tempFilter" style="height:36px;font-size:12px"><option value="">Temperatura</option><option>Frio</option><option>Morno</option><option>Quente</option><option>Muito Quente</option></select><button class="btn btn-secondary" id="applyPartnerFilters" style="height:36px"><span class="material-symbols-outlined">filter_alt</span>Filtrar</button></div></div></div><div class="card" style="padding:0;overflow:hidden"><div class="table-wrapper"><table class="table"><thead><tr><th>Nome do Parceiro</th><th>Tipo</th><th>Status</th><th>Temp</th><th>Score</th><th>Saude</th><th>Valor Estimado</th><th>Ultimo Contato</th><th style="text-align:right">Ficha</th></tr></thead><tbody>${CRM.partners.map(partnerRow).join("") || '<tr><td colspan="9">Nenhum parceiro encontrado.</td></tr>'}</tbody></table></div></div><button id="fabPartner" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background-color:var(--primary);color:white;border:none;box-shadow:var(--shadow-lg);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100"><span class="material-symbols-outlined" style="font-size:28px">add</span></button>`;
+  app.innerHTML = `<div class="page-header"><div class="page-title-group"><h2>Diretorio Geral de Parceiros</h2><p>Consulte, filtre e gerencie todos os investidores, operadores e proprietarios cadastrados.</p></div><div class="page-actions"><button class="btn btn-secondary" id="exportCsv"><span class="material-symbols-outlined">download</span>Exportar CSV</button><button class="btn btn-primary" id="newPartner"><span class="material-symbols-outlined">person_add</span>Novo Parceiro</button></div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px">${statBox("Total de Parceiros", total, "var(--primary)")}${statBox("Em Negociacao", pipe, "var(--warning)")}${statBox("Aporte/Valor Medio", money(total ? tv / total : 0), "var(--primary)")}${statBox("Score Critico (90+)", crit, "var(--error)")}</div><div class="card" style="margin-bottom:24px;padding:16px;background-color:var(--surface-container-low)"><div style="display:flex;flex-direction:column;gap:16px"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="font-size:11px;font-weight:bold;color:var(--on-surface-variant);margin-right:8px">Filtrar por Tipo:</span>${typeFilterButton("", "Todos")}${typeFilterButton("investor", "Investidores")}${typeFilterButton("operator", "Socios Gestores")}${typeFilterButton("landowner", "Proprietarios")}<button class="btn btn-secondary" style="padding:4px 12px;font-size:11px">Objecoes Pendentes</button><button class="btn btn-secondary" style="padding:4px 12px;font-size:11px">Docs Pendentes</button></div><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div style="positionrelative;flex-grow:1;min-width:220px"><input class="form-input" id="partnerSearch" placeholder="Buscar por nome, cidade ou email..." value="${esc(params.search || "")}" style="width:100%;padding-left:32px;height:36px;font-size:12px"><span class="material-symbols-outlined" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--outline)">search</span></div><select class="form-select" id="stateFilter" style="height:36px;font-size:12px"><option value="">Estado</option><option>SP</option><option>RJ</option><option>MG</option><option>ES</option></select><select class="form-select" id="tempFilter" style="height:36px;font-size:12px"><option value="">Temperatura</option><option>Frio</option><option>Morno</option><option>Quente</option><option>Muito Quente</option></select><button class="btn btn-secondary" id="applyPartnerFilters" style="height:36px"><span class="material-symbols-outlined">filter_alt</span>Filtrar</button></div></div></div><div class="card" style="padding:0;overflow:hidden"><div class="table-wrapper"><table class="table"><thead><tr><th>Nome do Parceiro</th><th>Tipo</th><th>Status</th><th>Temp</th><th>Score <a href="#/score-explicacao" style="color:var(--primary);text-decoration:none" title="Clique para entender o score"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">info</span></a></th><th>Saude</th><th>Valor Estimado</th><th>Ultimo Contato</th><th style="text-align:right">Ficha</th></tr></thead><tbody>${CRM.partners.map(partnerRow).join("") || '<tr><td colspan="9">Nenhum parceiro encontrado.</td></tr>'}</tbody></table></div></div><button id="fabPartner" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background-color:var(--primary);color:white;border:none;box-shadow:var(--shadow-lg);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100"><span class="material-symbols-outlined" style="font-size:28px">add</span></button>`;
   $("#newPartner").addEventListener("click", () => openPartnerForm());
   $("#fabPartner").addEventListener("click", () => openPartnerForm());
   $("#exportCsv").addEventListener("click", exportCsv);
@@ -608,7 +609,7 @@ function partnerRow(p) {
       : p.type === "landowner"
         ? "terrain"
         : "account_balance";
-  return `<tr><td><div style="display:flex;align-items:center;gap:12px"><div style="width:36px;height:36px;background:rgba(0,32,70,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--primary)"><span class="material-symbols-outlined">${ic}</span></div><div><button class="open-partner" data-id="${p.id}" style="font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0">${esc(p.name)}</button><p style="font-size:11px;color:var(--on-surface-variant);margin-top:2px">${esc(p.city || "")} - ${esc(p.state || "")}</p></div></div></td><td><span class="badge badge-info" style="font-size:9px">${typeName(p.type)}</span></td><td><div style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:${sc}"></span><span style="font-size:11px;font-weight:bold;color:${sc}">${sc === "#10b981" ? "Ativo" : sc === "#ef4444" ? "Inativo" : "Em Negociacao"}</span></div></td><td><span class="material-symbols-outlined" style="color:${tempColor(p.temperature)};font-size:18px">device_thermostat</span></td><td style="font-family:var(--font-mono);font-weight:bold">${p.score || 0}</td><td><div style="width:64px;height:6px;background:var(--surface-container-highest);border-radius:3px;overflow:hidden"><div style="width:${Number(p.score || 0)}%;height:100%;background:${scoreColor(p.score)}"></div></div></td><td style="font-family:var(--font-mono);font-size:12px">${estimatedValue(p)}</td><td style="font-size:11px;color:var(--on-surface-variant)">${p.last_interaction_at ? new Date(p.last_interaction_at).toLocaleDateString("pt-BR") : "Sem registros"}</td><td style="text-align:right"><button class="btn btn-secondary open-partner" data-id="${p.id}" style="padding:6px"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button></td></tr>`;
+  return `<tr><td><div style="display:flex;align-items:center;gap:12px"><div style="width:36px;height:36px;background:rgba(0,32,70,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--primary)"><span class="material-symbols-outlined">${ic}</span></div><div><button class="open-partner" data-id="${p.id}" style="font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0">${esc(p.name)}</button><p style="font-size:11px;color:var(--on-surface-variant);margin-top:2px">${esc(p.city || "")} - ${esc(p.state || "")}</p></div></div></td><td><span class="badge badge-info" style="font-size:9px">${typeName(p.type)}</span></td><td><div style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:${sc}"></span><span style="font-size:11px;font-weight:bold;color:${sc}">${sc === "#10b981" ? "Ativo" : sc === "#ef4444" ? "Inativo" : "Em Negociacao"}</span></div></td><td><span class="material-symbols-outlined" style="color:${tempColor(p.temperature)};font-size:18px">device_thermostat</span></td><td style="font-family:var(--font-mono);font-weight:bold">${p.score || 0} <a href="#/score-explicacao" style="color:var(--primary);text-decoration:none" title="Clique para entender o score"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle">info</span></a></td><td><div style="width:64px;height:6px;background:var(--surface-container-highest);border-radius:3px;overflow:hidden"><div style="width:${Number(p.score || 0)}%;height:100%;background:${scoreColor(p.score)}"></div></div></td><td style="font-family:var(--font-mono);font-size:12px">${estimatedValue(p)}</td><td style="font-size:11px;color:var(--on-surface-variant)">${p.last_interaction_at ? new Date(p.last_interaction_at).toLocaleDateString("pt-BR") : "Sem registros"}</td><td style="text-align:right"><button class="btn btn-secondary open-partner" data-id="${p.id}" style="padding:6px"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button></td></tr>`;
 }
 function exportCsv() {
   const h = [
@@ -890,16 +891,29 @@ function pipelineCard(p, movedPartnerId = null) {
   const val = estimatedValue(p);
   const pr = score >= 80;
   const isJustDropped = String(p.id) === String(movedPartnerId);
-  return `<div class="pipeline-card ${isJustDropped ? 'just-dropped' : ''}" draggable="true" data-id="${p.id}" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritario</span>' : ""}</div><div style="display:flex;gap:2px;color:var(--primary);margin-bottom:8px">${Array.from(
-    { length: 5 },
-  )
-    .map(
-      (_, i) =>
-        `<span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' ${i < stars ? 1 : 0};color:${i < stars ? "var(--primary)" : "var(--outline-variant)"}">star</span>`,
-    )
-    .join(
-      "",
-    )}</div>${val !== "N/A" ? `<div style="margin-bottom:8px"><p style="font-size:9px;color:var(--on-surface-variant);text-transform:uppercase;margin:0">Valor Projetado</p><strong style="font-size:13px;color:var(--primary);font-family:var(--font-mono)">${val}</strong></div>` : ""}<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--on-surface-variant);margin-bottom:8px"><span class="material-symbols-outlined" style="font-size:12px">history</span><span>Ultimo contato monitorado</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid rgba(0,0,0,.05);font-size:10px"><span style="font-weight:bold;color:var(--on-surface-variant);text-transform:uppercase;font-family:var(--font-mono)">Etapa ativa</span><div style="width:20px;height:20px;border-radius:50%;background-color:var(--primary-container);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:9px;font-weight:bold">${esc((p.name || "?").charAt(0))}</div></div></div>`;
+  return `<div class="pipeline-card ${isJustDropped ? 'just-dropped' : ''}" draggable="true" data-id="${p.id}" style="background:white;padding:12px;border-radius:6px;border:${pr ? "2px solid var(--error)" : "1px solid var(--outline-variant)"};box-shadow:var(--shadow-sm);cursor:pointer">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <button class="open-partner" data-id="${p.id}" style="font-size:13px;font-weight:bold;color:var(--primary);border:0;background:transparent;cursor:pointer;padding:0;text-align:left">${esc(p.name)}</button>
+      ${pr ? '<span style="font-size:9px;padding:1px 5px;background-color:var(--error-container);color:var(--error);font-weight:bold;text-transform:uppercase;border-radius:2px">Prioritário</span>' : ""}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;gap:2px;color:var(--primary)">
+        ${Array.from({ length: 5 }).map((_, i) => `<span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' ${i < stars ? 1 : 0};color:${i < stars ? "var(--primary)" : "var(--outline-variant)"}">star</span>`).join("")}
+      </div>
+      <a href="#/score-explicacao" style="display:inline-flex;align-items:center;color:var(--primary);opacity:0.8;text-decoration:none" title="Clique para entender o score">
+        <span class="material-symbols-outlined" style="font-size:15px">info</span>
+      </a>
+    </div>
+    ${val !== "N/A" ? `<div style="margin-bottom:8px"><p style="font-size:9px;color:var(--on-surface-variant);text-transform:uppercase;margin:0">Valor Projetado</p><strong style="font-size:13px;color:var(--primary);font-family:var(--font-mono)">${val}</strong></div>` : ""}
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--on-surface-variant);margin-bottom:8px">
+      <span class="material-symbols-outlined" style="font-size:12px">history</span>
+      <span>Último contato monitorado</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid rgba(0,0,0,.05);font-size:10px">
+      <span style="font-weight:bold;color:var(--on-surface-variant);text-transform:uppercase;font-family:var(--font-mono)">Etapa ativa</span>
+      <div style="width:20px;height:20px;border-radius:50%;background-color:var(--primary-container);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:9px;font-weight:bold">${esc((p.name || "?").charAt(0))}</div>
+    </div>
+  </div>`;
 }
 async function renderAlerts() {
   loading("Carregando alertas...");
@@ -1647,7 +1661,7 @@ async function openPartnerDetail(id) {
   const profile = data.profile || {};
   openModal(
     p.name,
-    `<div class="page-header" style="margin-bottom:20px"><div class="page-title-group"><h2>${esc(p.name)}</h2><p>${typeName(p.type)} - ${esc(p.city || "")}/${esc(p.state || "")} - Score ${p.score}</p></div><div class="page-actions"><button class="btn btn-secondary" id="editPartner"><span class="material-symbols-outlined">edit</span>Editar</button><button class="btn btn-danger" id="archivePartner"><span class="material-symbols-outlined">archive</span>Arquivar</button></div></div><div class="grid-2col"><div class="card"><div class="card-header"><span class="card-title">Dados comerciais</span></div><div class="card-body"><p><strong>Telefone:</strong> ${esc(p.phone || "-")}</p><p><strong>WhatsApp:</strong> ${esc(p.whatsapp || "-")}</p><p><strong>Email:</strong> ${esc(p.email || "-")}</p><p><strong>Origem:</strong> ${esc(p.source || "-")}</p><p><strong>Proxima acao:</strong> ${esc(p.next_action || "-")}</p><p><strong>Notas:</strong> ${esc(p.notes || "-")}</p></div></div><div class="card"><div class="card-header"><span class="card-title">Perfil</span></div><div class="card-body">${profileHtml(p.type, profile)}</div></div></div><div class="card"><div class="card-header"><span class="card-title">Tarefas</span><button class="btn btn-secondary" id="addTask"><span class="material-symbols-outlined">add_task</span>Adicionar</button></div><div class="table-wrapper"><table class="table"><thead><tr><th>Tarefa</th><th>Vencimento</th><th>Prioridade</th><th>Status</th><th style="text-align:right">Ação</th></tr></thead><tbody>${(data.tasks || []).map((t) => `<tr><td><strong>${esc(t.title)}</strong></td><td><span style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;color:var(--on-surface-variant)">${esc(t.due_date ? t.due_date.replace(/:\d{2}$/, '') : "-")}</span></td><td>${badge(t.priority)}</td><td>${esc(t.status)}</td><td style="text-align:right"><button class="btn btn-secondary complete-task" data-id="${t.id}" style="padding:4px 8px;font-size:11px">Concluir</button></td></tr>`).join("") || '<tr><td colspan="5">Sem tarefas.</td></tr>'}</tbody></table></div></div>`,
+    `<div class="page-header" style="margin-bottom:20px"><div class="page-title-group"><h2>${esc(p.name)}</h2><p>${typeName(p.type)} - ${esc(p.city || "")}/${esc(p.state || "")} - Score ${p.score} <a href="#/score-explicacao" style="color:var(--primary);text-decoration:none" title="Clique para entender o score"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">info</span></a></p></div><div class="page-actions"><button class="btn btn-secondary" id="editPartner"><span class="material-symbols-outlined">edit</span>Editar</button><button class="btn btn-danger" id="archivePartner"><span class="material-symbols-outlined">archive</span>Arquivar</button></div></div><div class="grid-2col"><div class="card"><div class="card-header"><span class="card-title">Dados comerciais</span></div><div class="card-body"><p><strong>Telefone:</strong> ${esc(p.phone || "-")}</p><p><strong>WhatsApp:</strong> ${esc(p.whatsapp || "-")}</p><p><strong>Email:</strong> ${esc(p.email || "-")}</p><p><strong>Origem:</strong> ${esc(p.source || "-")}</p><p><strong>Proxima acao:</strong> ${esc(p.next_action || "-")}</p><p><strong>Notas:</strong> ${esc(p.notes || "-")}</p></div></div><div class="card"><div class="card-header"><span class="card-title">Perfil</span></div><div class="card-body">${profileHtml(p.type, profile)}</div></div></div><div class="card"><div class="card-header"><span class="card-title">Tarefas</span><button class="btn btn-secondary" id="addTask"><span class="material-symbols-outlined">add_task</span>Adicionar</button></div><div class="table-wrapper"><table class="table"><thead><tr><th>Tarefa</th><th>Vencimento</th><th>Prioridade</th><th>Status</th><th style="text-align:right">Ação</th></tr></thead><tbody>${(data.tasks || []).map((t) => `<tr><td><strong>${esc(t.title)}</strong></td><td><span style="font-family:var(--font-mono);font-size:11px;white-space:nowrap;color:var(--on-surface-variant)">${esc(t.due_date ? t.due_date.replace(/:\d{2}$/, '') : "-")}</span></td><td>${badge(t.priority)}</td><td>${esc(t.status)}</td><td style="text-align:right"><button class="btn btn-secondary complete-task" data-id="${t.id}" style="padding:4px 8px;font-size:11px">Concluir</button></td></tr>`).join("") || '<tr><td colspan="5">Sem tarefas.</td></tr>'}</tbody></table></div></div>`,
   );
   $("#editPartner").addEventListener("click", () =>
     openPartnerForm({ ...p, ...profile }),
@@ -1677,6 +1691,108 @@ function profileHtml(t, p) {
   if (t === "operator")
     return `<p><strong>Experiencia:</strong> ${esc(p.sector_experience || "-")}</p><p><strong>Gestao:</strong> ${esc(p.management_experience || "-")}</p><p><strong>Disponibilidade:</strong> ${esc(p.operational_availability || "-")}</p><p><strong>Confianca:</strong> ${esc(p.trust_level || "-")}</p>`;
   return `<p><strong>Local:</strong> ${esc(p.land_location || "-")}</p><p><strong>Area:</strong> ${esc(p.area_size || "-")} m2</p><p><strong>Preco:</strong> ${money(p.asking_price)}</p><p><strong>Potencial:</strong> ${esc(p.commercial_potential || "-")}</p><p><strong>Documentacao:</strong> ${esc(p.documentation_status || "-")}</p>`;
+}
+function renderScoreExplanation() {
+  app.innerHTML = `
+    <div style="max-width:960px;margin:0 auto;width:100%;padding-bottom:40px">
+      <div class="page-header" style="margin-bottom:24px">
+        <div class="page-title-group">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="material-symbols-outlined" style="color:var(--primary);font-size:28px">info</span>
+            <h2>Algoritmo de Score Comercial (0 a 100 pts)</h2>
+          </div>
+          <p>Entenda como a pontuação e as 5 estrelas dos parceiros são calculadas automaticamente no CRM.</p>
+        </div>
+        <div class="page-actions">
+          <a href="#/parceiros" class="btn btn-secondary"><span class="material-symbols-outlined">arrow_back</span>Voltar aos Parceiros</a>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;padding:20px;background:white">
+        <h3 style="margin-top:0;margin-bottom:16px;color:var(--primary);display:flex;align-items:center;gap:8px">
+          <span class="material-symbols-outlined">star</span> Classificação por Estrelas no Funil
+        </h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+          <div style="padding:16px;background:var(--surface-container-low);border-radius:8px;border:1px solid var(--outline-variant)">
+            <div style="display:flex;gap:2px;color:var(--primary);margin-bottom:6px">
+              ${Array.from({length:5}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">star</span>`).join('')}
+            </div>
+            <strong style="font-size:14px;color:var(--primary)">Score 90 a 100</strong>
+            <p style="font-size:11px;color:var(--on-surface-variant);margin:4px 0 0">Alta prioridade comercial. Oportunidade quente com dados completos.</p>
+          </div>
+          <div style="padding:16px;background:var(--surface-container-low);border-radius:8px;border:1px solid var(--outline-variant)">
+            <div style="display:flex;gap:2px;color:var(--primary);margin-bottom:6px">
+              ${Array.from({length:4}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">star</span>`).join('')}
+              <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 0;color:var(--outline-variant)">star</span>
+            </div>
+            <strong style="font-size:14px;color:var(--primary)">Score 70 a 89</strong>
+            <p style="font-size:11px;color:var(--on-surface-variant);margin:4px 0 0">Excelente perfil. Potencial qualificado com bom avanço.</p>
+          </div>
+          <div style="padding:16px;background:var(--surface-container-low);border-radius:8px;border:1px solid var(--outline-variant)">
+            <div style="display:flex;gap:2px;color:var(--primary);margin-bottom:6px">
+              ${Array.from({length:3}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">star</span>`).join('')}
+              ${Array.from({length:2}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 0;color:var(--outline-variant)">star</span>`).join('')}
+            </div>
+            <strong style="font-size:14px;color:var(--primary)">Score 40 a 69</strong>
+            <p style="font-size:11px;color:var(--on-surface-variant);margin:4px 0 0">Oportunidade em desenvolvimento. Requer novos dados de qualificação.</p>
+          </div>
+          <div style="padding:16px;background:var(--surface-container-low);border-radius:8px;border:1px solid var(--outline-variant)">
+            <div style="display:flex;gap:2px;color:var(--primary);margin-bottom:6px">
+              ${Array.from({length:2}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 1">star</span>`).join('')}
+              ${Array.from({length:3}).map(()=>`<span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'FILL' 0;color:var(--outline-variant)">star</span>`).join('')}
+            </div>
+            <strong style="font-size:14px;color:var(--primary)">Score Abaixo de 40</strong>
+            <p style="font-size:11px;color:var(--on-surface-variant);margin:4px 0 0">Perfil básico inicial ou prospecção recente.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2col" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+        <div class="card" style="padding:20px">
+          <h4 style="margin-top:0;color:var(--primary);display:flex;align-items:center;gap:8px">
+            <span class="material-symbols-outlined">payments</span> Investidores
+          </h4>
+          <ul style="padding-left:20px;font-size:12px;line-height:1.8;color:var(--on-surface);margin:0">
+            <li><strong style="color:var(--primary)">+30 pts</strong>: Capital disponível ≥ R$ 1.000.000</li>
+            <li><strong style="color:var(--primary)">+20 pts</strong>: Histórico de investimentos anteriores</li>
+            <li><strong style="color:var(--primary)">+20 pts</strong>: Proposta comercial enviada</li>
+            <li><strong style="color:var(--primary)">+15 pts</strong>: Capacidade = <em>Decisor Único</em></li>
+            <li><strong style="color:var(--primary)">+10 pts</strong>: Perfil financeiro Arrojado / Moderado</li>
+          </ul>
+        </div>
+
+        <div class="card" style="padding:20px">
+          <h4 style="margin-top:0;color:var(--primary);display:flex;align-items:center;gap:8px">
+            <span class="material-symbols-outlined">badge</span> Sócios / Operadores
+          </h4>
+          <ul style="padding-left:20px;font-size:12px;line-height:1.8;color:var(--on-surface);margin:0">
+            <li><strong style="color:var(--primary)">+30 pts</strong>: Anos de experiência comprovada no setor</li>
+            <li><strong style="color:var(--primary)">+20 pts</strong>: Experiência prévia em gestão de postos</li>
+            <li><strong style="color:var(--primary)">+20 pts</strong>: Nível de confiança registrado ≥ 8/10</li>
+            <li><strong style="color:var(--primary)">+15 pts</strong>: Disponibilidade operacional Integral</li>
+            <li><strong style="color:var(--primary)">+15 pts</strong>: Validação jurídica Aprovada</li>
+          </ul>
+        </div>
+
+        <div class="card" style="padding:20px;grid-column:1/-1">
+          <h4 style="margin-top:0;color:var(--primary);display:flex;align-items:center;gap:8px">
+            <span class="material-symbols-outlined">location_on</span> Expansão de Terrenos
+          </h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+            <ul style="padding-left:20px;font-size:12px;line-height:1.8;color:var(--on-surface);margin:0">
+              <li><strong style="color:var(--primary)">+30 pts</strong>: Potencial comercial Altíssimo / Excelente</li>
+              <li><strong style="color:var(--primary)">+20 pts</strong>: Documentação Completa registrada</li>
+              <li><strong style="color:var(--primary)">+20 pts</strong>: Fluxo veicular da região Alto / Intenso</li>
+            </ul>
+            <ul style="padding-left:20px;font-size:12px;line-height:1.8;color:var(--on-surface);margin:0">
+              <li><strong style="color:var(--primary)">+15 pts</strong>: Área total do terreno ≥ 2.000 m²</li>
+              <li><strong style="color:var(--primary)">+10 pts</strong>: Concorrência próxima Nenhuma</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 function openPartnerForm(data = {}) {
   openModal(

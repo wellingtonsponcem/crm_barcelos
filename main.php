@@ -79,13 +79,12 @@ if (!isset($_SESSION['logged_in_user'])) {
         <div class="header-left">
           <div class="search-container">
             <span class="material-symbols-outlined search-icon">search</span>
-            <input id="globalSearch" type="text" class="search-input" placeholder="Buscar parceiros, terrenos...">
+            <input type="text" class="search-input" id="globalSearch" placeholder="Buscar parceiros, terrenos...">
           </div>
         </div>
         <div class="header-right">
           <div class="header-actions">
             <a href="#/alertas" class="header-btn" title="Alertas Ativos"><span class="material-symbols-outlined">notifications</span><span class="badge-dot"></span></a>
-            <button class="header-btn" id="systemStatus" title="Status"><span class="material-symbols-outlined">wifi</span></button>
           </div>
           <div class="user-profile">
             <div class="user-info">
