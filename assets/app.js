@@ -156,16 +156,16 @@ async function init() {
   route();
 }
 function bindChrome() {
-  $("#newPartnerSidebar").addEventListener("click", () => openPartnerForm());
-  $("#modalClose").addEventListener("click", closeModal);
-  $("#modalBackdrop").addEventListener("click", (e) => {
+  $("#newPartnerSidebar")?.addEventListener("click", () => openPartnerForm());
+  $("#modalClose")?.addEventListener("click", closeModal);
+  $("#modalBackdrop")?.addEventListener("click", (e) => {
     if (e.target.id === "modalBackdrop") closeModal();
   });
-  $("#systemStatus").addEventListener("click", async () => {
+  $("#systemStatus")?.addEventListener("click", async () => {
     await api("init");
     toast("API PHP funcionando");
   });
-  $("#globalSearch").addEventListener("keydown", (e) => {
+  $("#globalSearch")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter")
       location.hash =
         "#/parceiros?search=" + encodeURIComponent(e.target.value.trim());
