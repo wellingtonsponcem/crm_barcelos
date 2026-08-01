@@ -48,7 +48,7 @@ if (!isset($_SESSION['logged_in_user'])) {
   <meta name="description" content="CRM tatico para gestao de investidores, operadores e proprietarios de terrenos.">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <link rel="stylesheet" href="<?= htmlspecialchars($basePath) ?>/assets/app.css?v=layout5">
+  <link rel="stylesheet" href="<?= htmlspecialchars($basePath) ?>/assets/app.css?v=<?= time() ?>">
 </head>
 <body>
   <div class="app-container">
@@ -120,7 +120,6 @@ if (!isset($_SESSION['logged_in_user'])) {
         'email' => $_SESSION['logged_in_user']['email']
     ], JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script src="<?= htmlspecialchars($basePath) ?>/assets/app.js?v=layout5"></script>
+  <script src="<?= htmlspecialchars($basePath) ?>/assets/app.js?v=<?= time() ?>"></script>
 </body>
 </html>
-

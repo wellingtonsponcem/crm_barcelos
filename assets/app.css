@@ -135,6 +135,50 @@ body {
   -webkit-overflow-scrolling: touch !important;
 }
 
+/* Modo Encaixar Colunas na Tela (Sem Rolagem) */
+.pipeline-board.fit-mode {
+  gap: 6px !important;
+  overflow-x: hidden !important;
+}
+
+.pipeline-board.fit-mode .pipeline-column {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.pipeline-board.fit-mode .pipeline-column-header {
+  padding: 8px 4px !important;
+}
+
+.pipeline-board.fit-mode .pipeline-column-header span {
+  font-size: 9px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.pipeline-board.fit-mode .pipeline-column-meta {
+  padding: 4px 4px !important;
+}
+
+.pipeline-board.fit-mode .pipeline-cards-container {
+  padding: 6px 4px !important;
+  gap: 6px !important;
+}
+
+.pipeline-board.fit-mode .pipeline-card {
+  padding: 8px 6px !important;
+}
+
+.pipeline-board.fit-mode .pipeline-card .open-partner {
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
 /* Dedicated High Contrast Custom Scrollbar */
 .pipeline-board::-webkit-scrollbar {
   height: 14px !important;

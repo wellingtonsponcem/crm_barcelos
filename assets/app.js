@@ -700,6 +700,8 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
     0,
   );
 
+  const isFitMode = localStorage.getItem("crm2_pipeline_fit_mode") === "true";
+
   app.innerHTML = `
     <div class="pipeline-view-wrapper">
       <div class="page-header" style="margin-bottom:12px;flex-shrink:0">
@@ -719,16 +721,19 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
           ${pipelineTypeButton(activeType, "operator", "Avaliação de Sócios/Operadores")}
           ${pipelineTypeButton(activeType, "landowner", "Expansão de Terrenos")}
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <span style="font-size:11px;color:var(--on-surface-variant);font-weight:bold;margin-right:4px">Navegar Colunas (${stages.length}):</span>
-          <button class="btn btn-secondary" id="scrollBoardStart" style="padding:4px 8px;font-size:11px" title="Ir para o início"><span class="material-symbols-outlined" style="font-size:16px">first_page</span></button>
-          <button class="btn btn-secondary" id="scrollBoardLeft" style="padding:4px 10px;font-size:11px" title="Rolar para esquerda"><span class="material-symbols-outlined" style="font-size:16px">chevron_left</span> Anterior</button>
-          <button class="btn btn-secondary" id="scrollBoardRight" style="padding:4px 10px;font-size:11px" title="Rolar para direita">Próxima <span class="material-symbols-outlined" style="font-size:16px">chevron_right</span></button>
-          <button class="btn btn-secondary" id="scrollBoardEnd" style="padding:4px 8px;font-size:11px" title="Ir para o fim"><span class="material-symbols-outlined" style="font-size:16px">last_page</span></button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn ${isFitMode ? "btn-primary" : "btn-secondary"}" id="togglePipelineFit" style="padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:4px" title="Alternar modo de exibição das 12 colunas"><span class="material-symbols-outlined" style="font-size:16px">${isFitMode ? "unfold_more" : "fit_screen"}</span> ${isFitMode ? "Modo Expandido (280px)" : "Encaixar 12 Colunas na Tela"}</button>
+          ${!isFitMode ? `
+          <div style="display:flex;gap:4px;align-items:center">
+            <button class="btn btn-secondary" id="scrollBoardStart" style="padding:4px 6px;font-size:11px" title="Ir para o início"><span class="material-symbols-outlined" style="font-size:16px">first_page</span></button>
+            <button class="btn btn-secondary" id="scrollBoardLeft" style="padding:4px 8px;font-size:11px" title="Rolar para esquerda"><span class="material-symbols-outlined" style="font-size:16px">chevron_left</span> Anterior</button>
+            <button class="btn btn-secondary" id="scrollBoardRight" style="padding:4px 8px;font-size:11px" title="Rolar para direita">Próxima <span class="material-symbols-outlined" style="font-size:16px">chevron_right</span></button>
+            <button class="btn btn-secondary" id="scrollBoardEnd" style="padding:4px 6px;font-size:11px" title="Ir para o fim"><span class="material-symbols-outlined" style="font-size:16px">last_page</span></button>
+          </div>` : ''}
         </div>
       </div>
 
-      <div class="pipeline-board">
+      <div class="pipeline-board ${isFitMode ? 'fit-mode' : ''}">
         ${stages.map((s, i) => pipelineColumn(s, grouped[s], i, stages.length, movedPartnerId)).join("")}
         <div style="flex:0 0 16px;width:16px"></div>
       </div>
@@ -748,6 +753,11 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
   `;
 
   $("#newPipelinePartner").addEventListener("click", () => openPartnerForm({ type: activeType }));
+  $("#togglePipelineFit").addEventListener("click", () => {
+    const curFit = localStorage.getItem("crm2_pipeline_fit_mode") === "true";
+    localStorage.setItem("crm2_pipeline_fit_mode", String(!curFit));
+    renderPipeline(activeType);
+  });
   $$(".pipeline-type").forEach((b) => b.addEventListener("click", () => renderPipeline(b.dataset.type)));
   $$(".open-partner").forEach((b) => b.addEventListener("click", () => openPartnerDetail(b.dataset.id)));
 
