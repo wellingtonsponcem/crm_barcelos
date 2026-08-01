@@ -116,44 +116,27 @@ function stageSets(t) {
   return (
     {
       investor: [
-        "Novo lead",
-        "Primeiro contato",
-        "Qualificação",
-        "Reunião estratégica",
-        "Apresentação do modelo",
-        "Envio de proposta",
-        "Auditoria Prévia (Due Diligence)",
-        "Negociação",
-        "Contrato",
-        "Aporte realizado",
-        "Investidor ativo",
+        "Prospecção & Contato",
+        "Qualificação & Reunião",
+        "Proposta & Auditoria",
+        "Negociação & Contrato",
+        "Parceria Concluída",
         "Perdido",
       ],
       operator: [
-        "Indicado",
-        "Primeiro contato",
-        "Analise inicial",
-        "Entrevista estrategica",
-        "Validacao de experiencia",
-        "Analise de perfil",
-        "Analise juridica",
-        "Definicao de funcao",
-        "Parceria aprovada",
-        "Integracao ao projeto",
+        "Prospecção & Indicação",
+        "Entrevista & Perfil",
+        "Análise Jurídica",
+        "Parceria Aprovada",
+        "Integração ao Projeto",
         "Reprovado",
       ],
       landowner: [
-        "Terreno identificado",
-        "Primeiro contato",
-        "Coleta de informacoes",
-        "Documentacao solicitada",
-        "Visita tecnica agendada",
-        "Visita realizada",
-        "Analise de viabilidade",
-        "Estudo financeiro",
-        "Negociacao",
-        "Contrato",
-        "Terreno aprovado",
+        "Mapeamento & Coleta",
+        "Vistoria Técnica",
+        "Estudo & Viabilidade",
+        "Negociação & Contrato",
+        "Terreno Aprovado",
         "Recusado",
       ],
     }[t] || stageSets("investor")
@@ -678,8 +661,36 @@ async function renderPipeline(activeType = "investor", movedPartnerId = null) {
   
   const normalizeStage = (ps) => {
     if (!ps) return stages[0];
-    const a = ps.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return stages.find(s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === a) || stages[0];
+    const s = ps.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    if (activeType === "investor") {
+      if (s.includes("lead") || s.includes("primeiro") || s.includes("contato") || s.includes("prospe")) return "Prospecção & Contato";
+      if (s.includes("qualifica") || s.includes("reuniao") || s.includes("apresentacao") || s.includes("modelo")) return "Qualificação & Reunião";
+      if (s.includes("proposta") || s.includes("diligence") || s.includes("auditoria") || s.includes("due")) return "Proposta & Auditoria";
+      if (s.includes("negocia") || s.includes("contrato")) return "Negociação & Contrato";
+      if (s.includes("aporte") || s.includes("ativo") || s.includes("conclui") || s.includes("parceria")) return "Parceria Concluída";
+      if (s.includes("perdid")) return "Perdido";
+    }
+
+    if (activeType === "operator") {
+      if (s.includes("indica") || s.includes("primeiro") || s.includes("contato") || s.includes("prospe")) return "Prospecção & Indicação";
+      if (s.includes("inicial") || s.includes("entrevista") || s.includes("experiencia") || s.includes("perfil")) return "Entrevista & Perfil";
+      if (s.includes("juridica") || s.includes("funcao")) return "Análise Jurídica";
+      if (s.includes("aprovad")) return "Parceria Aprovada";
+      if (s.includes("integra")) return "Integração ao Projeto";
+      if (s.includes("reprovad")) return "Reprovado";
+    }
+
+    if (activeType === "landowner") {
+      if (s.includes("terreno") || s.includes("primeiro") || s.includes("coleta") || s.includes("documenta") || s.includes("mapea")) return "Mapeamento & Coleta";
+      if (s.includes("visita") || s.includes("vistoria")) return "Vistoria Técnica";
+      if (s.includes("viabilidade") || s.includes("estudo")) return "Estudo & Viabilidade";
+      if (s.includes("negocia") || s.includes("contrato")) return "Negociação & Contrato";
+      if (s.includes("aprovad")) return "Terreno Aprovado";
+      if (s.includes("recusad")) return "Recusado";
+    }
+
+    return stages.find(st => st.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === s) || stages[0];
   };
 
   const grouped = Object.fromEntries(stages.map((s) => [s, []]));
